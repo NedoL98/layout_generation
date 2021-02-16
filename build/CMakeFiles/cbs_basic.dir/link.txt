@@ -1,0 +1,1 @@
+/usr/bin/g++-7  -g  -rdynamic CMakeFiles/cbs_basic.dir/agents.cpp.o CMakeFiles/cbs_basic.dir/graph.cpp.o CMakeFiles/cbs_basic.dir/main.cpp.o  -o cbs_basic -lyaml-cpp 
