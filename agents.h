@@ -1,16 +1,19 @@
 #pragma once
 
 #include <utility>
-#include <queue>
+#include <deque>
 
 #include "common.h"
 #include "graph.h"
+#include "task_assigner.h"
 #include "yaml-cpp/yaml.h"
 
 struct Agent {
   Point start;
-  std::queue<Point> locations_to_visit;
+  std::deque<Point> locations_to_visit;
   size_t id;
+
+  size_t CalculateLowerBound() const;
 };
 
 class Agents {
@@ -20,6 +23,10 @@ public:
 
   const std::vector<Agent>& GetAgents() const;
   const size_t GetSize() const;
+
+  void UpdateTasksLists(TaskAssigner& task_assigner, const size_t window_size);
+  void DeleteCompletedTasks(
+      const std::vector<std::vector<Point>>& path_prefixes, const size_t window_size);
 
 private:
   std::vector<Agent> agents;

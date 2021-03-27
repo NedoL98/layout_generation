@@ -24,3 +24,11 @@ std::optional<std::pair<Point, Point>> TaskAssigner::GetNextAssignment() {
   assignments.pop_front();
   return front_assignment;
 }
+
+bool TaskAssigner::HasAssignments() const {
+  return !assignments.empty();
+}
+
+size_t TaskAssigner::RemainingTasks() const {
+  return assignments.size();
+}

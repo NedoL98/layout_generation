@@ -2,6 +2,17 @@
 
 #include <cassert>
 
+size_t Agent::CalculateLowerBound() const {
+  size_t result = 0;
+  for (size_t i = 0; i < locations_to_visit.size(); ++i) {
+    const Point& prev_location = (i == 0) ? start : locations_to_visit[i - 1];
+    const Point& cur_location = locations_to_visit[i];
+    result += std::abs(prev_location.x - cur_location.x)
+        + std::abs(prev_location.y - cur_location.y);
+  }
+  return result;
+}
+
 Agents::Agents(const YAML::Node& yaml_agents) {
   agents.clear();
   size_t agent_id = 0;
@@ -38,4 +49,50 @@ const std::vector<Agent>& Agents::GetAgents() const {
 
 const size_t Agents::GetSize() const {
   return agents.size();
+}
+
+void Agents::UpdateTasksLists(TaskAssigner& task_assigner, const size_t window_size) {
+  std::cerr << "updating tasks list : " << std::endl;
+  for (auto& agent : agents) {
+    // todo: optimize this
+    while (agent.CalculateLowerBound() < window_size) {
+      const auto next_task_opt = task_assigner.GetNextAssignment();
+      if (next_task_opt) {
+        agent.locations_to_visit.push_back(next_task_opt->first);
+        agent.locations_to_visit.push_back(next_task_opt->second);
+      } else {
+        break;
+      }
+    }
+    for (const auto& point : agent.locations_to_visit) {
+      std::cerr << point << " ";
+    }
+    std::cerr << std::endl;
+  }
+  std::cerr << "~~~~~~~" << std::endl;
+}
+
+void Agents::DeleteCompletedTasks(
+    const std::vector<std::vector<Point>>& path_prefixes, const size_t window_size) {
+  std::cerr << "deleting completed tasks : " << std::endl;
+  for (size_t i = 0; i < path_prefixes.size(); ++i) {
+    for (size_t j = 0; j < std::min(window_size, path_prefixes[i].size()); ++j) {
+      const auto& cur_point = path_prefixes[i][j];
+      if (!agents[i].locations_to_visit.empty()
+          && agents[i].locations_to_visit.front() == cur_point) {
+        agents[i].locations_to_visit.pop_front();
+      }
+      if (j + 1 == std::min(window_size, path_prefixes[i].size())) {
+        std::cerr << "old position : " << agents[i].start << std::endl;
+        agents[i].start = cur_point;
+      }
+    }
+
+    std::cerr << "new position : " << agents[i].start << std::endl;
+    for (const auto& point : agents[i].locations_to_visit) {
+      std::cerr << point << " ";
+    }
+    std::cerr << std::endl;
+  }
+  std::cerr << "~~~~~~~~~" << std::endl;
 }
