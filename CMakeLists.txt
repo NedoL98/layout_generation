@@ -10,7 +10,9 @@ set(CMAKE_CXX_COMPILER "/usr/bin/g++-7")
 
 set(SOURCE_LIST
     agents.cpp
+    common.cpp
     graph.cpp
+    task_assigner.cpp
 )
 
 add_executable(

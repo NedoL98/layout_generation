@@ -3,16 +3,22 @@
 #include <set>
 #include <utility>
 
+#include "common.h"
 #include "yaml-cpp/yaml.h"
 
 class Graph{
 public:
   Graph(const YAML::Node& yaml_graph);
+  Graph(const char* filename);
 
-  std::vector<std::pair<int, int>> GetNeighbours(const std::pair<int, int>& pos) const;
+  const std::vector<Point>& GetCheckpoints() const;
+  const std::vector<Point> GetSpareLocations() const;
+
+  std::vector<Point> GetNeighbours(const Point& pos) const;
 
 private:
   int width;
   int height;
-  std::set<std::pair<int, int>> obstacles;
+  std::set<Point> obstacles;
+  std::vector<Point> checkpoints;
 };
