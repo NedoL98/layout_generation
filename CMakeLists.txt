@@ -9,7 +9,9 @@ set(CMAKE_CXX_COMPILER "/usr/bin/g++-7")
 # Pset_target_properties(cbs_basic PROPERTIES LINKER_LANGUAGE CXX)
 
 set(SOURCE_LIST
+    AStar.cpp
     agents.cpp
+    CBS.cpp
     common.cpp
     graph.cpp
     task_assigner.cpp
