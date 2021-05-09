@@ -22,6 +22,7 @@ public:
   Agents(const Graph& graph, const size_t agents_num, const size_t seed = 42);
 
   const std::vector<Agent>& GetAgents() const;
+  const Agent& At(const size_t index) const;
   const size_t GetSize() const;
 
   void UpdateTasksLists(TaskAssigner& task_assigner, const size_t window_size);

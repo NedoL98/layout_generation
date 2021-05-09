@@ -47,6 +47,10 @@ const std::vector<Agent>& Agents::GetAgents() const {
   return agents;
 }
 
+const Agent& Agents::At(const size_t index) const {
+  return agents.at(index);
+}
+
 const size_t Agents::GetSize() const {
   return agents.size();
 }

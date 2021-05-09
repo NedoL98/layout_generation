@@ -1,5 +1,6 @@
 #include "agents.h"
 #include "CBS.h"
+#include "PBS.h"
 #include "graph.h"
 #include "task_assigner.h"
 
@@ -26,7 +27,7 @@ int main(int argc, char** argv) {
   Graph graph(argv[1]);
   TaskAssigner task_assigner(graph, 100);
   Agents agents(graph, 10);
-  const auto paths = ConflictBasedSearch(agents, graph, task_assigner, 30);
+  const auto paths = PriorityBasedSearch(agents, graph, task_assigner, 30);
   for (size_t i = 0; i < paths.size(); ++i) {
     std::cerr << "Path for agent " << i << " : ";
     for (const auto& position : paths[i]) {
