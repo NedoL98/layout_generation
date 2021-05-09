@@ -17,6 +17,8 @@ set(SOURCE_LIST
     task_assigner.cpp
 )
 
+set(EXECUTABLE_OUTPUT_PATH build)
+
 add_executable(
     cbs_basic
     ${SOURCE_LIST}
