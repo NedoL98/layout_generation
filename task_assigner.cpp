@@ -6,13 +6,16 @@ TaskAssigner::TaskAssigner(const Graph& graph, const size_t assignments_cnt, con
   srand(seed);
   const auto& checkpoints = graph.GetCheckpoints();
   assert(checkpoints.size() >= 2 && "need at least two checkpoints!");
+  std::cout << "Generating initial " << assignments_cnt << " checkpoints: ";
   for (size_t i = 0; i < assignments_cnt; ++i) {
     const size_t start_idx = rand() % checkpoints.size();
     size_t finish_idx = rand() % checkpoints.size();
     while (finish_idx == start_idx) {
       finish_idx = rand() % checkpoints.size();
     }
-    assignments.push_back({checkpoints[start_idx], checkpoints[finish_idx]});
+    Assignment cur_assignment(checkpoints[start_idx], checkpoints[finish_idx]);
+    std::cout << cur_assignment << " ";
+    assignments.push_back(cur_assignment);
   }
 }
 

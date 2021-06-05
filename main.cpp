@@ -29,10 +29,12 @@ int main(int argc, char** argv) {
   Agents agents(graph, 10);
   const auto paths = PriorityBasedSearch(agents, graph, task_assigner, 30);
   for (size_t i = 0; i < paths.size(); ++i) {
-    std::cerr << "Path for agent " << i << " : ";
+    const Agent& cur_agent = agents.At(i);
+    std::cout << "Path for agent " << cur_agent.id << " : ";
     for (const auto& position : paths[i]) {
-      std::cerr << position << " ";
+      std::cout << position << " ";
     }
-    std::cerr << std::endl;
+    std::cout << std::endl;
+    cur_agent.PrintDebugInfo(std::cout);
   }
 }

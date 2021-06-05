@@ -11,8 +11,14 @@
 struct Agent {
   Point start;
   std::deque<Point> locations_to_visit;
+  std::vector<Assignment> all_assignments;
   size_t id;
 
+  Agent(const Point& start_, const size_t id_)
+    : start(start_)
+    , id(id_) {}
+
+  void PrintDebugInfo(std::ostream& ostream) const;
   size_t CalculateLowerBound() const;
 };
 

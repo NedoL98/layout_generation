@@ -2,6 +2,14 @@
 
 #include <cassert>
 
+void Agent::PrintDebugInfo(std::ostream& ostream) const {
+  ostream << "All assignments for agent " << id << ": ";
+  for (const auto& assignment : all_assignments) {
+    ostream << assignment << " ";
+  }
+  ostream << std::endl;
+}
+
 size_t Agent::CalculateLowerBound() const {
   size_t result = 0;
   for (size_t i = 0; i < locations_to_visit.size(); ++i) {
@@ -17,11 +25,7 @@ Agents::Agents(const YAML::Node& yaml_agents) {
   agents.clear();
   size_t agent_id = 0;
   for (const auto& yaml_agent : yaml_agents) {
-    agents.push_back({
-      yaml_agent["start"].as<std::pair<int, int>>(),
-      // yaml_agent["goal"].as<std::pair<int, int>>(),
-      {},
-      agent_id});
+    agents.push_back(Agent(yaml_agent["start"].as<std::pair<int, int>>(), agent_id));
     ++agent_id;
   }
 }
@@ -33,10 +37,7 @@ Agents::Agents(const Graph& graph, const size_t agents_num, const size_t seed) {
   size_t agent_id = 0;
   for (size_t i = 0; i < agents_num; ++i) {
     size_t rand_idx = rand() % spare_locations.size();
-    agents.push_back({
-      spare_locations[rand_idx],
-      {},
-      agent_id});
+    agents.push_back(Agent(spare_locations[rand_idx], agent_id));
     // redo this
     spare_locations.erase(spare_locations.begin() + rand_idx);
     ++agent_id;
@@ -64,6 +65,7 @@ void Agents::UpdateTasksLists(TaskAssigner& task_assigner, const size_t window_s
       if (next_task_opt) {
         agent.locations_to_visit.push_back(next_task_opt->start);
         agent.locations_to_visit.push_back(next_task_opt->finish);
+        agent.all_assignments.push_back(next_task_opt.value());
       } else {
         break;
       }

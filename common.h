@@ -34,4 +34,10 @@ std::optional<Conflict> FindFirstConflict(
 struct Assignment {
   Point start;
   Point finish;
+
+  Assignment(const Point& start_, const Point& finish_)
+    : start(start_)
+    , finish(finish_) {}
 };
+
+std::ostream& operator << (std::ostream& ostream, const Assignment& assignment);
