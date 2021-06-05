@@ -19,7 +19,7 @@ set(SOURCE_LIST
     topsort.cpp
 )
 
-set(EXECUTABLE_OUTPUT_PATH build)
+set(EXECUTABLE_OUTPUT_PATH)
 
 add_executable(
     cbs_basic
