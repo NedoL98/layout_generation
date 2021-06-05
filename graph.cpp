@@ -31,14 +31,25 @@ Graph::Graph(const char* filename) {
     Point current_point(std::stoi(tokens[3]), std::stoi(tokens[4]));
     if (tokens[1] == "Obstacle") {
       obstacles.insert(current_point);
-    } else if (tokens[1] != "Travel") {
-      checkpoints.push_back(current_point);
+    } else if (tokens[1] == "Eject") {
+      eject_checkpoints.push_back(current_point);
+    } else if (tokens[1] == "Induct") {
+      induct_checkpoints.push_back(current_point);
+    } else if (tokens[1] == "Travel") {
+      // pass
+    } else {
+      std::cerr << "Unknown cell type : " << tokens[1] << std::endl;
+      exit(0);
     }
   }
 }
 
-const std::vector<Point>& Graph::GetCheckpoints() const {
-  return checkpoints;
+const std::vector<Point>& Graph::GetEjectCheckpoints() const {
+  return eject_checkpoints;
+}
+
+const std::vector<Point>& Graph::GetInductCheckpoints() const {
+  return induct_checkpoints;
 }
 
 const std::vector<Point> Graph::GetSpareLocations() const {

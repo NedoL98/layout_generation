@@ -11,7 +11,8 @@ public:
   Graph(const YAML::Node& yaml_graph);
   Graph(const char* filename);
 
-  const std::vector<Point>& GetCheckpoints() const;
+  const std::vector<Point>& GetEjectCheckpoints() const;
+  const std::vector<Point>& GetInductCheckpoints() const;
   const std::vector<Point> GetSpareLocations() const;
 
   std::vector<Point> GetNeighbours(const Point& pos) const;
@@ -20,5 +21,6 @@ private:
   int width;
   int height;
   std::set<Point> obstacles;
-  std::vector<Point> checkpoints;
+  std::vector<Point> eject_checkpoints;
+  std::vector<Point> induct_checkpoints;
 };
