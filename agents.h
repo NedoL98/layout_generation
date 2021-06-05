@@ -32,7 +32,7 @@ public:
   const size_t GetSize() const;
 
   void UpdateTasksLists(TaskAssigner& task_assigner, const size_t window_size);
-  void DeleteCompletedTasks(
+  bool DeleteCompletedTasks(
       const std::vector<std::vector<Point>>& path_prefixes, const size_t window_size);
 
 private:

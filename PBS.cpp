@@ -141,16 +141,17 @@ std::vector<std::vector<Point>> MakePBSIteration(
 std::vector<std::vector<Point>> PriorityBasedSearch(
     Agents& agents, const Graph& graph, TaskAssigner& task_assigner, const size_t window_size) {
   std::vector<std::vector<Point>> result(agents.GetSize());
+  bool has_tasks = false;
   do {
     agents.UpdateTasksLists(task_assigner, window_size);
     const auto paths_prefixes = MakePBSIteration(agents, graph, task_assigner, window_size);
-    agents.DeleteCompletedTasks(paths_prefixes, window_size);
+    has_tasks = agents.DeleteCompletedTasks(paths_prefixes, window_size);
     std::cerr << "remaining tasks : " << task_assigner.RemainingTasks() << std::endl;
     for (size_t i = 0; i < paths_prefixes.size(); ++i) {
       for (size_t j = 0; j < std::min(window_size, paths_prefixes[i].size()); ++j) {
         result[i].push_back(paths_prefixes[i][j]);
       }
     }
-  } while (task_assigner.HasAssignments());
+  } while (task_assigner.HasAssignments() || has_tasks);
   return result;
 }

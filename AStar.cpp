@@ -15,7 +15,9 @@ std::vector<Point> AStar(
     const Agent& agent,
     const std::unordered_map<size_t, std::set<Point>>& agent_conflicts,
     const Graph& graph) {
-  assert(!agent.locations_to_visit.empty() && "locations to visit is empty!");
+  if (agent.locations_to_visit.empty()) {
+    return {};
+  }
   auto states_cmp = [&agent](const AStarState& s1, const AStarState& s2) {
     if (s1.label < s2.label) {
       return false;

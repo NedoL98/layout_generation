@@ -78,9 +78,10 @@ void Agents::UpdateTasksLists(TaskAssigner& task_assigner, const size_t window_s
   std::cerr << "~~~~~~~" << std::endl;
 }
 
-void Agents::DeleteCompletedTasks(
+bool Agents::DeleteCompletedTasks(
     const std::vector<std::vector<Point>>& path_prefixes, const size_t window_size) {
   std::cerr << "deleting completed tasks : " << std::endl;
+  bool has_tasks = false;
   for (size_t i = 0; i < path_prefixes.size(); ++i) {
     for (size_t j = 0; j < std::min(window_size, path_prefixes[i].size()); ++j) {
       const auto& cur_point = path_prefixes[i][j];
@@ -88,6 +89,7 @@ void Agents::DeleteCompletedTasks(
           && agents[i].locations_to_visit.front() == cur_point) {
         agents[i].locations_to_visit.pop_front();
       }
+      has_tasks |= !agents[i].locations_to_visit.empty();
       if (j + 1 == std::min(window_size, path_prefixes[i].size())) {
         std::cerr << "old position : " << agents[i].start << std::endl;
         agents[i].start = cur_point;
@@ -101,4 +103,5 @@ void Agents::DeleteCompletedTasks(
     std::cerr << std::endl;
   }
   std::cerr << "~~~~~~~~~" << std::endl;
+  return has_tasks;
 }
