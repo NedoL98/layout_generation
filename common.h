@@ -30,3 +30,8 @@ size_t CalculateCost(const std::vector<std::vector<Point>>& paths);
 std::optional<Conflict> FindFirstConflict(
     const std::vector<std::vector<Point>>& paths,
     const std::optional<size_t>& window_size);
+
+struct Assignment {
+  Point start;
+  Point finish;
+};

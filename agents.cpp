@@ -62,8 +62,8 @@ void Agents::UpdateTasksLists(TaskAssigner& task_assigner, const size_t window_s
     while (agent.CalculateLowerBound() < window_size) {
       const auto next_task_opt = task_assigner.GetNextAssignment();
       if (next_task_opt) {
-        agent.locations_to_visit.push_back(next_task_opt->first);
-        agent.locations_to_visit.push_back(next_task_opt->second);
+        agent.locations_to_visit.push_back(next_task_opt->start);
+        agent.locations_to_visit.push_back(next_task_opt->finish);
       } else {
         break;
       }

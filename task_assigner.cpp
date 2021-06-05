@@ -16,7 +16,7 @@ TaskAssigner::TaskAssigner(const Graph& graph, const size_t assignments_cnt, con
   }
 }
 
-std::optional<std::pair<Point, Point>> TaskAssigner::GetNextAssignment() {
+std::optional<Assignment> TaskAssigner::GetNextAssignment() {
   if (assignments.empty()) {
     return std::nullopt;
   }
