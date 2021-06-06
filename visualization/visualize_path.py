@@ -2,7 +2,7 @@ import argparse
 import pygame as pg
 import re
 
-SCREEN_SIZE = [1920, 1080]
+SCREEN_SIZE = [1920, 1920]
 
 class Assignment:
     def __init__(self, start, finish):
@@ -17,6 +17,14 @@ class Assignments:
     def append(self, assignment):
         self.starts.append(assignment.start)
         self.finishes.append(assignment.finish)
+
+    def get_list(self):
+        result = []
+        assert(len(self.starts) == len(self.finishes))
+        for i in range(len(self.starts)):
+            result.append(self.starts[i])
+            result.append(self.finishes[i])
+        return result
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
@@ -100,6 +108,43 @@ def draw_positions(paths, tick, screen, width, height, induct_points, eject_poin
         polygon_points = generate_square_polygon(int(pos[0]), int(pos[1]), scale, margin)
         pg.draw.polygon(screen, [0, 0, 0], polygon_points)
         screen.blit(pg.font.SysFont('Arial', 25).render(str(agent_idx), True, (0, 255, 0)), polygon_points[0])
+    # todo : make this work if board fits vertically
+    return (margin + scale) * height
+
+class Agent:
+    def __init__(self, checkpoints, path):
+        self.checkpoints = checkpoints.get_list()
+        self.path = path
+        self.passed_checkpoints = 0
+        self.path_idx = 0
+        assert len(self.checkpoints) > 0
+        assert len(self.path) > 0
+        if self.path[self.path_idx] == self.checkpoints[self.path_idx]:
+            self.passed_checkpoints += 1
+
+    def move_forward(self):
+        self.path_idx = min(len(self.path) - 1, self.path_idx + 1)
+        if self.passed_checkpoints < len(self.checkpoints) \
+            and self.path[self.path_idx] == self.checkpoints[self.passed_checkpoints]:
+            self.passed_checkpoints += 1
+
+    def move_backwards(self):
+        if self.passed_checkpoints > 0 \
+            and self.path[self.path_idx] == self.checkpoints[self.passed_checkpoints - 1]:
+            self.passed_checkpoints -= 1
+        self.path_idx = max(0, self.path_idx - 1)
+
+class Agents:
+    def __init__(self, agents):
+        self.agents = agents
+
+    def move_forward(self):
+        for agent in self.agents:
+            agent.move_forward()
+
+    def move_backwards(self):
+        for agent in self.agents:
+            agent.move_backwards()
 
 def visualize(width, height, paths, agent_checkpoints, induct_points, eject_points):
     pg.init()
@@ -117,8 +162,21 @@ def visualize(width, height, paths, agent_checkpoints, induct_points, eject_poin
     default_speed = 30
     speed_mult = 1.0
 
+    agents = Agents([Agent(checkpoints, path) for checkpoints, path in zip(agent_checkpoints, paths)])
+
     while not done:
-        draw_positions(paths, cur_idx, screen, width, height, induct_points, eject_points)
+        screen.fill([255, 255, 255])
+        board_lower_pos = draw_positions(paths, cur_idx, screen, width, height, induct_points, eject_points)
+        text_size = 25
+        for agent_idx, agent in enumerate(agents.agents):
+            text = "Agent {} passed {} checkpoints".format(str(agent_idx), agent.passed_checkpoints)
+            font = pg.font.SysFont('Arial', text_size).render(text, True, (0, 0, 0))
+            pos = (0, board_lower_pos + text_size * agent_idx)
+            screen.blit(font, pos)
+            if agent.passed_checkpoints == len(agent.checkpoints):
+                font_done = pg.font.SysFont('Arial', text_size).render(" Done", True, (0, 255, 0))
+                pos_done = font.get_size()
+                screen.blit(font_done, (pos_done[0], board_lower_pos + text_size * agent_idx))
         pg.display.update()
         for e in pg.event.get():
             if e.type == pg.KEYDOWN:
@@ -141,8 +199,10 @@ def visualize(width, height, paths, agent_checkpoints, induct_points, eject_poin
 
         if hold_right:
             cur_idx = min(cur_idx + 1, max_idx)
+            agents.move_forward()
         elif hold_left:
             cur_idx = max(cur_idx - 1, 0)
+            agents.move_backwards()
 
         clock.tick(default_speed * speed_mult)
 
