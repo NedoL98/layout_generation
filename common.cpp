@@ -61,6 +61,7 @@ std::optional<Conflict> FindFirstConflict(
 }
 
 std::ostream& operator << (std::ostream& ostream, const Assignment& assignment) {
-  ostream << "{" << assignment.start << ", " << assignment.finish << "}";
+  ostream << "{" << assignment.start_checkpoint_idx
+          << ", " << assignment.finish_checkpoint_idx << "}";
   return ostream;
 }

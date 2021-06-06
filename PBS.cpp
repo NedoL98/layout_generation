@@ -143,7 +143,7 @@ std::vector<std::vector<Point>> PriorityBasedSearch(
   std::vector<std::vector<Point>> result(agents.GetSize());
   bool has_tasks = false;
   do {
-    agents.UpdateTasksLists(task_assigner, window_size);
+    agents.UpdateTasksLists(task_assigner, window_size, graph);
     const auto paths_prefixes = MakePBSIteration(agents, graph, task_assigner, window_size);
     has_tasks = agents.DeleteCompletedTasks(paths_prefixes, window_size);
     std::cerr << "remaining tasks : " << task_assigner.RemainingTasks() << std::endl;

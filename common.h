@@ -32,12 +32,12 @@ std::optional<Conflict> FindFirstConflict(
     const std::optional<size_t>& window_size);
 
 struct Assignment {
-  Point start;
-  Point finish;
+  size_t start_checkpoint_idx;
+  size_t finish_checkpoint_idx;
 
-  Assignment(const Point& start_, const Point& finish_)
-    : start(start_)
-    , finish(finish_) {}
+  Assignment(const size_t start_checkpoint_idx_, const size_t finish_checkpoint_idx_)
+    : start_checkpoint_idx(start_checkpoint_idx_)
+    , finish_checkpoint_idx(finish_checkpoint_idx_) {}
 };
 
 std::ostream& operator << (std::ostream& ostream, const Assignment& assignment);

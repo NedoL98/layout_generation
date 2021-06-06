@@ -91,7 +91,7 @@ std::vector<std::vector<Point>> ConflictBasedSearch(
     Agents& agents, const Graph& graph, TaskAssigner& task_assigner, const size_t window_size) {
   std::vector<std::vector<Point>> result(agents.GetSize());
   do {
-    agents.UpdateTasksLists(task_assigner, window_size);
+    agents.UpdateTasksLists(task_assigner, window_size, graph);
     const auto paths_prefixes = MakeCBSIteration(agents, graph, task_assigner, window_size);
     /*
     std::cerr << "ok, got paths" << std::endl;

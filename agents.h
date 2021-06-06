@@ -11,7 +11,7 @@
 struct Agent {
   Point start;
   std::deque<Point> locations_to_visit;
-  std::vector<Assignment> all_assignments;
+  std::vector<std::pair<Point, Point>> all_checkpoints;
   size_t id;
 
   Agent(const Point& start_, const size_t id_)
@@ -31,7 +31,7 @@ public:
   const Agent& At(const size_t index) const;
   const size_t GetSize() const;
 
-  void UpdateTasksLists(TaskAssigner& task_assigner, const size_t window_size);
+  void UpdateTasksLists(TaskAssigner& task_assigner, const size_t window_size, const Graph& graph);
   bool DeleteCompletedTasks(
       const std::vector<std::vector<Point>>& path_prefixes, const size_t window_size);
 

@@ -4,15 +4,15 @@
 
 TaskAssigner::TaskAssigner(const Graph& graph, const size_t assignments_cnt, const size_t seed) {
   srand(seed);
-  const auto& induct_checkpoints = graph.GetInductCheckpoints();
-  const auto& eject_checkpoints = graph.GetEjectCheckpoints();
-  assert(!induct_checkpoints.empty() && "Need at least one induct checkpoint!");
-  assert(!eject_checkpoints.empty() && "Need at least one eject checkpoint!");
+  const size_t induct_checkpoints_size = graph.GetInductCheckpoints().size();
+  const size_t eject_checkpoints_size = graph.GetEjectCheckpoints().size();
+  assert(induct_checkpoints_size > 0 && "Need at least one induct checkpoint!");
+  assert(eject_checkpoints_size > 0 && "Need at least one eject checkpoint!");
   // std::cout << "Generating initial " << assignments_cnt << " checkpoints: ";
   for (size_t i = 0; i < assignments_cnt; ++i) {
-    const size_t start_idx = rand() % induct_checkpoints.size();
-    const size_t finish_idx = rand() % eject_checkpoints.size();
-    Assignment cur_assignment(induct_checkpoints[start_idx], eject_checkpoints[finish_idx]);
+    const size_t start_idx = rand() % induct_checkpoints_size;
+    const size_t finish_idx = rand() % eject_checkpoints_size;
+    Assignment cur_assignment(start_idx, finish_idx);
     // std::cout << cur_assignment << " ";
     assignments.push_back(cur_assignment);
   }

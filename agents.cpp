@@ -4,8 +4,8 @@
 
 void Agent::PrintDebugInfo(std::ostream& ostream) const {
   ostream << "All assignments for agent " << id << ": ";
-  for (const auto& assignment : all_assignments) {
-    ostream << assignment << " ";
+  for (const auto& checkpoint_pair : all_checkpoints) {
+    ostream << "{" << checkpoint_pair.first << ", " << checkpoint_pair.second << "} ";
   }
   ostream << std::endl;
 }
@@ -56,16 +56,21 @@ const size_t Agents::GetSize() const {
   return agents.size();
 }
 
-void Agents::UpdateTasksLists(TaskAssigner& task_assigner, const size_t window_size) {
+void Agents::UpdateTasksLists(
+    TaskAssigner& task_assigner, const size_t window_size, const Graph& graph) {
   std::cerr << "updating tasks list : " << std::endl;
   for (auto& agent : agents) {
     // todo: optimize this
     while (agent.CalculateLowerBound() < window_size) {
       const auto next_task_opt = task_assigner.GetNextAssignment();
       if (next_task_opt) {
-        agent.locations_to_visit.push_back(next_task_opt->start);
-        agent.locations_to_visit.push_back(next_task_opt->finish);
-        agent.all_assignments.push_back(next_task_opt.value());
+        const Point& start_position =
+            graph.GetInductCheckpoints()[next_task_opt->start_checkpoint_idx];
+        const Point& finish_position =
+            graph.GetEjectCheckpoints()[next_task_opt->finish_checkpoint_idx];
+        agent.locations_to_visit.push_back(start_position);
+        agent.locations_to_visit.push_back(finish_position);
+        agent.all_checkpoints.push_back({start_position, finish_position});
       } else {
         break;
       }
