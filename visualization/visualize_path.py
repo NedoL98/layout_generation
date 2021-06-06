@@ -66,13 +66,19 @@ def parse_checkpoints(line):
     return checkpoints
 
 def parse_output_file(mapf_output_file_path):
-    paths = []
+    paths_raw = []
     agent_checkpoints = []
     for line in open(mapf_output_file_path, "r").readlines():
         if line.startswith("Path for agent"):
-            paths.append(parse_path(line))
+            paths_raw.append(parse_path(line))
         elif line.startswith("All assignments for agent"):
             agent_checkpoints.append(parse_checkpoints(line))
+    max_path_len = max([len(path) for path in paths_raw])
+    paths = []
+    for path in paths_raw:
+        paths.append(path)
+        while len(paths[-1]) < max_path_len:
+            paths[-1].append(paths[-1][-1])
     return paths, agent_checkpoints
 
 def generate_square_polygon(w_idx, h_idx, scale = 10, margin = 2):
@@ -130,7 +136,8 @@ class Agent:
 
     def move_backwards(self):
         if self.passed_checkpoints > 0 \
-            and self.path[self.path_idx] == self.checkpoints[self.passed_checkpoints - 1]:
+            and self.path[self.path_idx] == self.checkpoints[self.passed_checkpoints - 1] \
+            and (self.path_idx == 0 or self.path[self.path_idx - 1] != self.path[self.path_idx]):
             self.passed_checkpoints -= 1
         self.path_idx = max(0, self.path_idx - 1)
 
