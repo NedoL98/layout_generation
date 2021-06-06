@@ -2,7 +2,7 @@ import argparse
 import pygame as pg
 import re
 
-SCREEN_SIZE = [1920, 1920]
+SCREEN_SIZE = [1920, 1180]
 
 class Assignment:
     def __init__(self, start, finish):
@@ -113,7 +113,7 @@ def draw_positions(paths, tick, screen, width, height, induct_points, eject_poin
             pos = path[tick]
         polygon_points = generate_square_polygon(int(pos[0]), int(pos[1]), scale, margin)
         pg.draw.polygon(screen, [0, 0, 0], polygon_points)
-        screen.blit(pg.font.SysFont('Arial', 25).render(str(agent_idx), True, (0, 255, 0)), polygon_points[0])
+        screen.blit(pg.font.SysFont('Arial', int(scale)).render(str(agent_idx), True, (0, 255, 0)), polygon_points[0])
     # todo : make this work if board fits vertically
     return (margin + scale) * height
 
