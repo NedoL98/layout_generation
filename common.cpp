@@ -31,6 +31,7 @@ size_t CalculateCost(const std::vector<std::vector<Point>>& paths) {
   });
 }
 
+// todo : resolve edge conflicts too
 std::optional<Conflict> FindFirstConflict(
     const std::vector<std::vector<Point>>& paths,
     const std::optional<size_t>& window_size) {
