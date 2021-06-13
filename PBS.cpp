@@ -99,11 +99,11 @@ std::vector<std::vector<Point>> MakePBSIteration(
       const size_t agent_id_high_priority,
       const size_t ts,
       const Point& position) {
-    state.conflicts[agent_id_high_priority][ts].insert(position);
+    state.conflicts[agent_id_low_priority][ts].insert(position);
     state.priority_graph[agent_id_high_priority].push_back(agent_id_low_priority);
-    UpdatePaths(agents, graph, state, agent_id_high_priority);
+    UpdatePaths(agents, graph, state, agent_id_low_priority);
 
-    if (state.paths[agent_id_high_priority].empty()) {
+    if (state.paths[agent_id_low_priority].empty()) {
       return;
     }
     state.cost = CalculateCost(state.paths);
