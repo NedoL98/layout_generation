@@ -79,3 +79,9 @@ std::vector<Point> Graph::GetNeighbours(const Point& pos) const {
   }
   return neighbours;
 }
+
+void Graph::ShuffleCheckpoints(const size_t seed) {
+  srand(seed);
+  std::random_shuffle(eject_checkpoints.begin(), eject_checkpoints.end());
+  std::random_shuffle(induct_checkpoints.begin(), induct_checkpoints.end());
+}

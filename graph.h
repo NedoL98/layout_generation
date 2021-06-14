@@ -16,6 +16,7 @@ public:
   const std::vector<Point> GetSpareLocations() const;
 
   std::vector<Point> GetNeighbours(const Point& pos) const;
+  void ShuffleCheckpoints(const size_t seed = 42);
 
 private:
   int width;

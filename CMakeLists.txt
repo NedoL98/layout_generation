@@ -19,14 +19,22 @@ set(SOURCE_LIST
     topsort.cpp
 )
 
-set(EXECUTABLE_OUTPUT_PATH)
-
 add_executable(
-    cbs_basic
+    PBS
     ${SOURCE_LIST}
-    main.cpp
+    PBS_launch.cpp
 )
 target_link_libraries(
-    cbs_basic
+    PBS
+    yaml-cpp
+)
+
+add_executable(
+    layout_generation
+    ${SOURCE_LIST}
+    layout_generation_launch.cpp
+)
+target_link_libraries(
+    layout_generation
     yaml-cpp
 )
