@@ -55,8 +55,8 @@ const std::vector<Point>& Graph::GetInductCheckpoints() const {
 const std::vector<Point> Graph::GetSpareLocations() const {
   std::vector<Point> result;
   result.reserve(width * height - obstacles.size());
-  for (size_t i = 0; i < width; ++i) {
-    for (size_t j = 0; j < height; ++j) {
+  for (int i = 0; i < width; ++i) {
+    for (int j = 0; j < height; ++j) {
       if (!obstacles.count({i, j})) {
         result.push_back({i, j});
       }
