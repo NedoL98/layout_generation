@@ -52,7 +52,10 @@ void UpdatePaths(
         pbs_state.conflicts.count(agent.id)
             ? pbs_state.conflicts.at(agent.id)
             : std::unordered_map<size_t, std::set<Point>>{},
-        graph);
+        graph,
+        std::cref(pbs_state.paths),
+        std::cref(topsort_order),
+        i);
         path_updated[agent_id] = true;
     } else {
       // Update path only for the chosen agent and for all conflicting agents with lower priority
@@ -73,7 +76,10 @@ void UpdatePaths(
           pbs_state.conflicts.count(agent.id)
               ? pbs_state.conflicts.at(agent.id)
               : std::unordered_map<size_t, std::set<Point>>{},
-          graph);
+          graph,
+          std::cref(pbs_state.paths),
+          std::cref(topsort_order),
+          i);
         path_updated[agent_id] = true;
       }
     }

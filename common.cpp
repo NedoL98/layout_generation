@@ -52,7 +52,9 @@ std::optional<Conflict> FindFirstConflict(
       const auto agent_pos = paths[agent_id][ts];
       if (position_to_agent.count(agent_pos)) {
         // Conflict found
-        std::cerr << "has conflict for : " << agent_id << " and " << position_to_agent.at(agent_pos) << " at " << ts << std::endl;
+        std::cerr << "has conflict for : " << agent_id << " and " << position_to_agent.at(agent_pos) << std::endl;
+        std::cerr << "ts: " << ts << std::endl;
+        std::cerr << "vertex : " << agent_pos << std::endl;
         return Conflict{position_to_agent.at(agent_pos), agent_id, ts};
       }
       position_to_agent[agent_pos] = agent_id;
