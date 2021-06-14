@@ -14,7 +14,10 @@ struct AStarState {
 std::vector<Point> AStar(
     const Agent& agent,
     const std::unordered_map<size_t, std::set<Point>>& agent_conflicts,
-    const Graph& graph) {
+    const Graph& graph,
+    const std::optional<std::reference_wrapper<const std::vector<std::vector<Point>>>> paths_opt,
+    const std::optional<std::reference_wrapper<const std::vector<size_t>>> topsort_order_opt,
+    const std::optional<size_t> agent_topsort_idx_opt) {
   if (agent.locations_to_visit.empty()) {
     return {};
   }
@@ -40,6 +43,29 @@ std::vector<Point> AStar(
     }
     ++start_ts;
   }
+
+  const auto do_visit = [&] (const Point& position, const size_t ts) {
+    if (used.count({position, ts})) {
+      // State was visited earlier
+      return false;
+    }
+    if (agent_conflicts.count(ts) && agent_conflicts.at(ts).count(position)) {
+      // Forbidden by conflict
+      return false;
+    }
+    if (paths_opt && topsort_order_opt && agent_topsort_idx_opt) {
+      for (size_t i = 0; i < agent_topsort_idx_opt.value(); ++i) {
+        size_t agent_idx = topsort_order_opt->get()[i];
+        if (ts < paths_opt->get()[agent_idx].size()
+            && paths_opt->get()[agent_idx][ts] == position) {
+          // Has conflict with higher priority agent
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
   while (!states.empty()) {
     const AStarState cur_state = *(states.begin());
 
@@ -48,26 +74,26 @@ std::vector<Point> AStar(
     const size_t ts = cur_state.ts;
 
     for (const auto& neighbour : neighbours) {
-      if ((!agent_conflicts.count(ts + 1) || !agent_conflicts.at(ts + 1).count(neighbour))
-          && !used.count({neighbour, ts + 1})) {
-        auto new_path = cur_state.path;
-        new_path.push_back(neighbour);
-
-        AStarState new_state = cur_state;
-        new_state.path = new_path;
-        if (new_state.path.back() == agent.locations_to_visit[new_state.label]) {
-          ++new_state.label;
-        }
-        ++new_state.ts;
-
-        if (new_state.label == agent.locations_to_visit.size()) {
-          // AStar done
-          return new_state.path;
-        }
-
-        states.insert(std::move(new_state));
-        used.insert({neighbour, new_state.ts});
+      if (!do_visit(neighbour, ts + 1)) {
+        continue;
       }
+      auto new_path = cur_state.path;
+      new_path.push_back(neighbour);
+
+      AStarState new_state = cur_state;
+      new_state.path = new_path;
+      if (new_state.path.back() == agent.locations_to_visit[new_state.label]) {
+        ++new_state.label;
+      }
+      ++new_state.ts;
+
+      if (new_state.label == agent.locations_to_visit.size()) {
+        // AStar done
+        return new_state.path;
+      }
+
+      states.insert(std::move(new_state));
+      used.insert({neighbour, new_state.ts});
     }
   }
   std::cerr << "AStar is stuck on " << agent.id << "!" << std::endl;
