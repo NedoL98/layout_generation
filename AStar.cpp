@@ -13,7 +13,8 @@ struct AStarState {
 
 std::vector<Point> AStar(
     const Agent& agent,
-    const std::unordered_map<size_t, std::set<Point>>& agent_conflicts,
+    const std::unordered_map<size_t, std::set<Point>>& vertex_conflicts,
+    const std::unordered_map<size_t, std::set<Edge>>&  edge_conflicts,
     const Graph& graph,
     const std::optional<std::reference_wrapper<const std::vector<std::vector<Point>>>> paths_opt,
     const std::optional<std::reference_wrapper<const std::vector<size_t>>> topsort_order_opt,
@@ -37,29 +38,42 @@ std::vector<Point> AStar(
 
   size_t start_ts = 0;
   while (states.empty()) {
-    if (!agent_conflicts.count(start_ts) || !agent_conflicts.at(start_ts).count(agent.start)) {
+    if (!vertex_conflicts.count(start_ts) || !vertex_conflicts.at(start_ts).count(agent.start)) {
       states.insert({{agent.start}, 0, start_ts});
       used.insert({agent.start, start_ts});
     }
     ++start_ts;
   }
 
-  const auto do_visit = [&] (const Point& position, const size_t ts) {
-    if (used.count({position, ts})) {
+  const auto do_visit = [&] (const Point& position, const Point& next_position, const size_t ts) {
+    if (used.count({next_position, ts})) {
       // State was visited earlier
       return false;
     }
-    if (agent_conflicts.count(ts) && agent_conflicts.at(ts).count(position)) {
-      // Forbidden by conflict
+    if (vertex_conflicts.count(ts) && vertex_conflicts.at(ts).count(next_position)) {
+      // Forbidden by vertex conflict
+      return false;
+    }
+    if (edge_conflicts.count(ts) && edge_conflicts.at(ts).count({position, next_position})) {
+      // Forbidden by edge conflict
       return false;
     }
     if (paths_opt && topsort_order_opt && agent_topsort_idx_opt) {
       for (size_t i = 0; i < agent_topsort_idx_opt.value(); ++i) {
         size_t agent_idx = topsort_order_opt->get()[i];
-        if (ts < paths_opt->get()[agent_idx].size()
-            && paths_opt->get()[agent_idx][ts] == position) {
-          // Has conflict with higher priority agent
+        if (ts >= paths_opt->get()[agent_idx].size()) {
+          continue;
+        }
+        if (paths_opt->get()[agent_idx][ts] == next_position) {
+          // Has vertex conflict with higher priority agent
           return false;
+        }
+        if (ts > 0) {
+          if (paths_opt->get()[agent_idx][ts] == next_position
+              && paths_opt->get()[agent_idx][ts - 1] == position) {
+            // Has edge conflict with higher priority agent
+            return false;
+          }
         }
       }
     }
@@ -74,7 +88,7 @@ std::vector<Point> AStar(
     const size_t ts = cur_state.ts;
 
     for (const auto& neighbour : neighbours) {
-      if (!do_visit(neighbour, ts + 1)) {
+      if (!do_visit(cur_state.path.back(), neighbour, ts + 1)) {
         continue;
       }
       auto new_path = cur_state.path;

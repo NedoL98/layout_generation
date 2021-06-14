@@ -11,7 +11,7 @@ set(CMAKE_CXX_COMPILER "/usr/bin/g++-7")
 set(PBS_SOURCE_LIST
     AStar.cpp
     agents.cpp
-    CBS.cpp
+    # CBS.cpp
     common.cpp
     graph.cpp
     PBS.cpp

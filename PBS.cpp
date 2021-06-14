@@ -8,14 +8,21 @@
 
 struct PBSState {
   // agent -> time -> positions
-  std::unordered_map<size_t, std::unordered_map<size_t, std::set<Point>>> conflicts;
+  std::unordered_map<size_t, std::unordered_map<size_t, std::set<Point>>> vertex_conflicts;
+  // agent -> time -> edge
+  std::unordered_map<size_t, std::unordered_map<size_t, std::set<Edge>>> edge_conflicts;
   std::vector<std::vector<Point>> paths;
   std::vector<std::vector<size_t>> priority_graph;
   int cost;
 
   PBSState(const size_t size)
   : paths(size)
-  , priority_graph(size) {}
+  , priority_graph(size) {
+    for (size_t i = 0; i < size; ++i) {
+      vertex_conflicts[i] = {};
+      edge_conflicts[i] = {};
+    }
+  }
 };
 
 namespace {
@@ -42,6 +49,7 @@ void UpdatePaths(
   for (size_t i = 0; i < topsort_order.size(); ++i) {
     const size_t agent_id = topsort_order[i];
     const Agent& agent = agents.At(agent_id);
+    assert(agent_id == agent.id);
 
     // todo : update AStar according to paper
 
@@ -49,9 +57,8 @@ void UpdatePaths(
       // Update all paths
       pbs_state.paths[agent_id] = AStar(
         agent,
-        pbs_state.conflicts.count(agent.id)
-            ? pbs_state.conflicts.at(agent.id)
-            : std::unordered_map<size_t, std::set<Point>>{},
+        pbs_state.vertex_conflicts.at(agent_id),
+        pbs_state.edge_conflicts.at(agent_id),
         graph,
         std::cref(pbs_state.paths),
         std::cref(topsort_order),
@@ -60,7 +67,7 @@ void UpdatePaths(
     } else {
       // Update path only for the chosen agent and for all conflicting agents with lower priority
       assert(update_path_for.value() < agents.GetSize());
-      bool update_path = update_path_for.value();
+      bool update_path = (update_path_for.value() == agent_id);
       if (!update_path) {
         for (size_t j = 0; j < i; ++j) {
           const size_t higher_priority_agent_id = topsort_order[j];
@@ -73,9 +80,8 @@ void UpdatePaths(
       if (update_path) {
         pbs_state.paths[agent_id] = AStar(
           agent,
-          pbs_state.conflicts.count(agent.id)
-              ? pbs_state.conflicts.at(agent.id)
-              : std::unordered_map<size_t, std::set<Point>>{},
+          pbs_state.vertex_conflicts.at(agent.id),
+          pbs_state.edge_conflicts.at(agent.id),
           graph,
           std::cref(pbs_state.paths),
           std::cref(topsort_order),
@@ -103,9 +109,27 @@ std::vector<std::vector<Point>> MakePBSIteration(
       PBSState state,
       const size_t agent_id_low_priority,
       const size_t agent_id_high_priority,
-      const size_t ts,
-      const Point& position) {
-    state.conflicts[agent_id_low_priority][ts].insert(position);
+      const ConflictBase& conflict) {
+    const size_t ts = conflict.ts;
+
+    if (conflict.conflict_type == ConflictType::VertexConflict) {
+      const Point position = dynamic_cast<const VertexConflict&>(conflict).conflicting_vertex;
+      assert(position == state.paths[agent_id_low_priority][ts]);
+      state.vertex_conflicts[agent_id_low_priority][ts].insert(position);
+    } else if (conflict.conflict_type == ConflictType::EdgeConflict) {
+      Edge edge = dynamic_cast<const EdgeConflict&>(conflict).conflicting_edge;
+      if (state.paths[agent_id_low_priority][ts - 1] != edge.first
+          && state.paths[agent_id_low_priority][ts] != edge.second) {
+        std::swap(edge.second, edge.first);
+      }
+      assert(edge.first == state.paths[agent_id_low_priority][ts - 1]);
+      assert(edge.second == state.paths[agent_id_low_priority][ts]);
+      state.edge_conflicts[agent_id_low_priority][ts].insert(std::move(edge));
+    } else {
+      std::cerr << "Conflict has no type!" << std::endl;
+      exit(0);
+    }
+
     state.priority_graph[agent_id_high_priority].push_back(agent_id_low_priority);
     UpdatePaths(agents, graph, state, agent_id_low_priority);
 
@@ -113,29 +137,19 @@ std::vector<std::vector<Point>> MakePBSIteration(
       return;
     }
     state.cost = CalculateCost(state.paths);
-    states.insert(state);
+    states.insert(std::move(state));
   };
 
   while (!states.empty()) {
     const PBSState cur_state = *(states.begin());
     states.erase(states.begin());
-    const auto conflict = FindFirstConflict(cur_state.paths, window_size);
+    auto conflict = FindFirstConflict(cur_state.paths, window_size);
     if (!conflict) {
       // CBS done
       return cur_state.paths;
     }
-    const size_t ts = conflict->ts;
-    const Point position = cur_state.paths[conflict->agent_1][ts];
-
-    /*
-    std::cerr << "Conflict found for agents "
-              << conflict->agent_1 << " and " << conflict->agent_2
-              << " at {" << position.first << ", " << position.second << "} on ts "
-              << ts << std::endl;
-    */
-
-    add_state_with_conflict(cur_state, conflict->agent_1, conflict->agent_2, ts, position);
-    add_state_with_conflict(cur_state, conflict->agent_2, conflict->agent_1, ts, position);
+    add_state_with_conflict(cur_state, conflict->agent_1, conflict->agent_2, *conflict);
+    add_state_with_conflict(cur_state, conflict->agent_2, conflict->agent_1, *conflict);
   }
   std::cerr << "Something went wrong CBS has no states!" << std::endl;
   return {};
