@@ -85,3 +85,22 @@ void Graph::ShuffleCheckpoints(const size_t seed) {
   std::random_shuffle(eject_checkpoints.begin(), eject_checkpoints.end());
   std::random_shuffle(induct_checkpoints.begin(), induct_checkpoints.end());
 }
+
+void Graph::ApplyPermutation(
+    const std::vector<size_t>& eject_checkpoints_permutation,
+    const std::vector<size_t>& induct_checkpoints_permutation) {
+  const auto sort_and_apply_permutation = [] (
+      std::vector<Point>& vec, const std::vector<size_t>& permutation) {
+    assert(vec.size() == permutation.size());
+    std::sort(vec.begin(), vec.end());
+    // todo : make this more efficient
+    std::vector<Point> new_vec(vec.size());
+    for (size_t i = 0; i < permutation.size(); ++i) {
+      new_vec[i] = vec[permutation[i]];
+    }
+    vec = std::move(new_vec);
+  };
+
+  sort_and_apply_permutation(induct_checkpoints, induct_checkpoints_permutation);
+  sort_and_apply_permutation(eject_checkpoints, eject_checkpoints_permutation);
+}

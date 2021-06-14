@@ -13,6 +13,7 @@ struct Conflict {
 };
 
 struct Point {
+  Point() = default;
   Point(const std::pair<int, int>& position);
   Point(const int pos_x, const int pos_y);
 

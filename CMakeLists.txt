@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_COMPILER "/usr/bin/g++-7")
 # Pset_target_properties(cbs_basic PROPERTIES LINKER_LANGUAGE CXX)
 
-set(SOURCE_LIST
+set(PBS_SOURCE_LIST
     AStar.cpp
     agents.cpp
     CBS.cpp
@@ -21,7 +21,7 @@ set(SOURCE_LIST
 
 add_executable(
     PBS
-    ${SOURCE_LIST}
+    ${PBS_SOURCE_LIST}
     PBS_launch.cpp
 )
 target_link_libraries(
@@ -29,9 +29,14 @@ target_link_libraries(
     yaml-cpp
 )
 
+set(LAYOUT_GENERATION_SOURCE_LIST
+    ${PBS_SOURCE_LIST}
+    genetic.cpp
+)
+
 add_executable(
     layout_generation
-    ${SOURCE_LIST}
+    ${LAYOUT_GENERATION_SOURCE_LIST}
     layout_generation_launch.cpp
 )
 target_link_libraries(

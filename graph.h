@@ -17,6 +17,9 @@ public:
 
   std::vector<Point> GetNeighbours(const Point& pos) const;
   void ShuffleCheckpoints(const size_t seed = 42);
+  void ApplyPermutation(
+      const std::vector<size_t>& eject_checkpoints_permutation,
+      const std::vector<size_t>& induct_checkpoints_permutation);
 
 private:
   int width;
