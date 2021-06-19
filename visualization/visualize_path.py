@@ -89,9 +89,17 @@ def generate_square_polygon(w_idx, h_idx, scale = 10, margin = 2):
         [(w_idx) * (scale + margin), (h_idx + 1) * (scale + margin) - margin]]
 
 def draw_empty_board(screen, width, height, scale, margin, induct_points, eject_points):
+    total_width = width * (scale + margin)
+    total_height = height * (scale + margin)
+    pg.draw.polygon(screen, [0, 0, 0], [
+        [0, 0],
+        [total_width, 0],
+        [total_width, total_height],
+        [0, total_height]
+    ])
     for w in range(width):
         for h in range(height):
-            color = [255, 0, 0]
+            color = [255, 255, 200]
             assignment = (w, h)
             if assignment in induct_points:
                 color = [0, 255, 0]
