@@ -6,8 +6,7 @@
 struct Chromosome {
   void Init(
       const size_t eject_checkpoints_num,
-      const size_t induct_checkpoints_num,
-      const size_t seed = 42);
+      const size_t induct_checkpoints_num);
 
   void Crossover(const Chromosome& other);
   void Mutate();
@@ -26,7 +25,8 @@ public:
   Generation(
       const size_t generation_size,
       const size_t eject_checkpoints_num,
-      const size_t induct_checkpoints_num);
+      const size_t induct_checkpoints_num,
+      const size_t seed = 42);
 
   const std::vector<Chromosome>& GetChromosomes() const {
     return chromosomes;
