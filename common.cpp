@@ -35,6 +35,10 @@ size_t CalculateCost(const std::vector<std::vector<Point>>& paths) {
   });
 }
 
+double CalculateThroughput(const std::vector<std::vector<Point>>& paths, const size_t assignments) {
+  return CalculateCost(paths) / static_cast<double>(assignments);
+}
+
 std::shared_ptr<ConflictBase> FindFirstConflict(
     const std::vector<std::vector<Point>>& paths,
     const std::optional<size_t>& window_size) {
