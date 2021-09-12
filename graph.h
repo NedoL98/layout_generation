@@ -15,11 +15,14 @@ public:
   const std::vector<Point>& GetInductCheckpoints() const;
   const std::vector<Point> GetSpareLocations() const;
 
-  std::vector<Point> GetNeighbours(const Point& pos) const;
+  std::vector<Point> GetNeighbours(const Point& pos, const bool with_pos = true) const;
+  std::optional<Point> GetAnyNearSpareLocation(const Point& pos) const;
   void ShuffleCheckpoints(const size_t seed = 42);
   void ApplyPermutation(
       const std::vector<size_t>& eject_checkpoints_permutation,
       const std::vector<size_t>& induct_checkpoints_permutation);
+
+  void SetEjectCheckpointsAsObstacles(const std::vector<Assignment>& assignments);
 
 private:
   int width;

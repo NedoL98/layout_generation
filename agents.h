@@ -12,6 +12,7 @@ struct Agent {
   Point start;
   std::deque<Point> locations_to_visit;
   std::vector<std::pair<Point, Point>> all_checkpoints;
+  std::vector<std::pair<Point, Point>> all_locations_to_visit;
   size_t id;
 
   Agent(const Point& start_, const size_t id_)

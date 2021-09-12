@@ -18,6 +18,10 @@ TaskAssigner::TaskAssigner(const Graph& graph, const size_t assignments_cnt, con
   }
 }
 
+std::vector<Assignment> TaskAssigner::GetAllRemainingAssigments() const {
+  return std::vector<Assignment>(assignments.begin(), assignments.end());
+}
+
 std::optional<Assignment> TaskAssigner::GetNextAssignment() {
   if (assignments.empty()) {
     return std::nullopt;

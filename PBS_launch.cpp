@@ -26,6 +26,8 @@ int main(int argc, char** argv) {
   */
   Graph graph(argv[1]);
   TaskAssigner task_assigner(graph, 100);
+  // Set chosen eject checkpoints as obstacles
+  graph.SetEjectCheckpointsAsObstacles(task_assigner.GetAllRemainingAssigments());
   Agents agents(graph, 10);
   const auto paths = PriorityBasedSearch(agents, graph, task_assigner, 30);
   for (size_t i = 0; i < paths.size(); ++i) {

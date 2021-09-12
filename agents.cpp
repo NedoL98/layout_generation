@@ -8,6 +8,11 @@ void Agent::PrintDebugInfo(std::ostream& ostream) const {
     ostream << "{" << checkpoint_pair.first << ", " << checkpoint_pair.second << "} ";
   }
   ostream << std::endl;
+  ostream << "All locations to visit for agent " << id << ": ";
+  for (const auto& location_pair : all_locations_to_visit) {
+    ostream << "{" << location_pair.first << ", " << location_pair.second << "} ";
+  }
+  ostream << std::endl;
 }
 
 size_t Agent::CalculateLowerBound() const {
@@ -64,13 +69,18 @@ void Agents::UpdateTasksLists(
     while (agent.CalculateLowerBound() < window_size) {
       const auto next_task_opt = task_assigner.GetNextAssignment();
       if (next_task_opt) {
-        const Point& start_position =
+        const Point& start_checkpoint_position =
             graph.GetInductCheckpoints()[next_task_opt->start_checkpoint_idx];
-        const Point& finish_position =
+        const Point& finish_checkpoint_position =
             graph.GetEjectCheckpoints()[next_task_opt->finish_checkpoint_idx];
-        agent.locations_to_visit.push_back(start_position);
-        agent.locations_to_visit.push_back(finish_position);
-        agent.all_checkpoints.push_back({start_position, finish_position});
+        const std::optional<Point> finish_position_opt =
+            graph.GetAnyNearSpareLocation(finish_checkpoint_position);
+        assert(finish_position_opt && "No spare location near finish point can be found");
+        agent.locations_to_visit.push_back(start_checkpoint_position);
+        agent.locations_to_visit.push_back(finish_position_opt.value());
+        agent.all_locations_to_visit.push_back(
+            {start_checkpoint_position, finish_position_opt.value()});
+        agent.all_checkpoints.push_back({start_checkpoint_position, finish_checkpoint_position});
       } else {
         break;
       }

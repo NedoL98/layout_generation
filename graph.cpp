@@ -65,19 +65,29 @@ const std::vector<Point> Graph::GetSpareLocations() const {
   return result;
 }
 
-std::vector<Point> Graph::GetNeighbours(const Point& pos) const {
+std::vector<Point> Graph::GetNeighbours(const Point& pos, const bool with_pos) const {
   std::vector<Point> neighbours;
   for (const int dx : {-1, 0, 1}) {
     for (const int dy : {-1, 0, 1}) {
       if (abs(dx) + abs(dy) <= 1
           && pos.x + dx < width && pos.x + dx >= 0
           && pos.y + dy < height && pos.y + dy >= 0
-          && !obstacles.count(Point{pos.x + dx, pos.y + dy})) {
+          && !obstacles.count(Point{pos.x + dx, pos.y + dy})
+          && (with_pos || abs(dx) + abs(dy) == 1)) {
         neighbours.push_back(Point{pos.x + dx, pos.y + dy});
       }
     }
   }
   return neighbours;
+}
+
+std::optional<Point> Graph::GetAnyNearSpareLocation(const Point& pos) const {
+  const std::vector<Point> neighbours = GetNeighbours(pos, false);
+  if (neighbours.empty()) {
+    return std::nullopt;
+  } else {
+    return neighbours[rand() % neighbours.size()];
+  }
 }
 
 void Graph::ShuffleCheckpoints(const size_t seed) {
@@ -103,4 +113,10 @@ void Graph::ApplyPermutation(
 
   sort_and_apply_permutation(induct_checkpoints, induct_checkpoints_permutation);
   sort_and_apply_permutation(eject_checkpoints, eject_checkpoints_permutation);
+}
+
+void Graph::SetEjectCheckpointsAsObstacles(const std::vector<Assignment>& assignments) {
+  for (const auto& assignment : assignments) {
+    obstacles.insert(eject_checkpoints[assignment.finish_checkpoint_idx]);
+  }
 }

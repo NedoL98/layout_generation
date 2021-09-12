@@ -68,18 +68,21 @@ def parse_checkpoints(line):
 def parse_output_file(mapf_output_file_path):
     paths_raw = []
     agent_checkpoints = []
+    agent_locations_to_visit = []
     for line in open(mapf_output_file_path, "r").readlines():
         if line.startswith("Path for agent"):
             paths_raw.append(parse_path(line))
         elif line.startswith("All assignments for agent"):
             agent_checkpoints.append(parse_checkpoints(line))
+        elif line.startswith("All locations to visit for agent"):
+            agent_locations_to_visit.append(parse_checkpoints(line))
     max_path_len = max([len(path) for path in paths_raw])
     paths = []
     for path in paths_raw:
         paths.append(path)
         while len(paths[-1]) < max_path_len:
             paths[-1].append(paths[-1][-1])
-    return paths, agent_checkpoints
+    return paths, agent_checkpoints, agent_locations_to_visit
 
 def generate_square_polygon(w_idx, h_idx, scale = 10, margin = 2):
     return [
@@ -160,7 +163,8 @@ class Agents:
         for agent in self.agents:
             agent.move_backwards()
 
-def visualize(width, height, paths, agent_checkpoints, induct_points, eject_points):
+def visualize(width, height, paths, agent_checkpoints, agents_location_to_visit,
+        induct_points, eject_points):
     pg.init()
     screen = pg.display.set_mode(SCREEN_SIZE)
     screen.fill([255, 255, 255])
@@ -176,7 +180,7 @@ def visualize(width, height, paths, agent_checkpoints, induct_points, eject_poin
     default_speed = 30
     speed_mult = 1.0
 
-    agents = Agents([Agent(checkpoints, path) for checkpoints, path in zip(agent_checkpoints, paths)])
+    agents = Agents([Agent(location_to_visit, path) for location_to_visit, path in zip(agents_location_to_visit, paths)])
     agent_checkpoints_set = set((elem[0], elem[1]) for sublist in agent_checkpoints for elem in sublist.get_list())
 
     while not done:
@@ -224,5 +228,5 @@ def visualize(width, height, paths, agent_checkpoints, induct_points, eject_poin
 if __name__ == "__main__":
     args = parse_arguments()
     width, height, induct_points, eject_points = parse_queries_file(args.queries)
-    paths, agents_checkpoints = parse_output_file(args.mapf_output)
-    visualize(width, height, paths, agents_checkpoints, induct_points, eject_points)
+    paths, agents_checkpoints, agents_location_to_visit = parse_output_file(args.mapf_output)
+    visualize(width, height, paths, agents_checkpoints, agents_location_to_visit, induct_points, eject_points)
