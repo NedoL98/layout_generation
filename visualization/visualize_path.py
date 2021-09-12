@@ -88,7 +88,7 @@ def generate_square_polygon(w_idx, h_idx, scale = 10, margin = 2):
         [(w_idx + 1) * (scale + margin) - margin, (h_idx + 1) * (scale + margin) - margin],
         [(w_idx) * (scale + margin), (h_idx + 1) * (scale + margin) - margin]]
 
-def draw_empty_board(screen, width, height, scale, margin, induct_points, eject_points):
+def draw_empty_board(screen, width, height, scale, margin, induct_points, agent_checkpoints):
     total_width = width * (scale + margin)
     total_height = height * (scale + margin)
     pg.draw.polygon(screen, [0, 0, 0], [
@@ -103,16 +103,15 @@ def draw_empty_board(screen, width, height, scale, margin, induct_points, eject_
             assignment = (w, h)
             if assignment in induct_points:
                 color = [0, 255, 0]
-                assert assignment not in eject_points
-            elif assignment in eject_points:
+            elif assignment in agent_checkpoints:
                 color = [0, 0, 255]
             pg.draw.polygon(screen, color, generate_square_polygon(w, h, scale, margin))
 
-def draw_positions(paths, tick, screen, width, height, induct_points, eject_points):
+def draw_positions(paths, tick, screen, width, height, induct_points, agent_checkpoints):
     scale = min(SCREEN_SIZE[0] / width, SCREEN_SIZE[1] / height)
     margin = 2
     scale -= margin
-    draw_empty_board(screen, width, height, scale, margin, induct_points, eject_points)
+    draw_empty_board(screen, width, height, scale, margin, induct_points, agent_checkpoints)
     for agent_idx, path in enumerate(paths):
         pos = None
         if tick >= len(path):
@@ -178,10 +177,11 @@ def visualize(width, height, paths, agent_checkpoints, induct_points, eject_poin
     speed_mult = 1.0
 
     agents = Agents([Agent(checkpoints, path) for checkpoints, path in zip(agent_checkpoints, paths)])
+    agent_checkpoints_set = set((elem[0], elem[1]) for sublist in agent_checkpoints for elem in sublist.get_list())
 
     while not done:
         screen.fill([255, 255, 255])
-        board_lower_pos = draw_positions(paths, cur_idx, screen, width, height, induct_points, eject_points)
+        board_lower_pos = draw_positions(paths, cur_idx, screen, width, height, induct_points, agent_checkpoints_set)
         text_size = 25
         for agent_idx, agent in enumerate(agents.agents):
             text = "Agent {} passed {} checkpoints".format(str(agent_idx), agent.passed_checkpoints)
