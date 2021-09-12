@@ -25,7 +25,7 @@ std::vector<Point> GenerateLayout(int argc, char** argv) {
   TaskAssigner task_assigner = task_assigner_init;
   const Agents agents_init(graph, 10);
   Agents agents = agents_init;
-  const size_t generation_size = 3;
+  const size_t generation_size = 5;
   Generation generation(
       generation_size, graph.GetEjectCheckpoints().size(), graph.GetInductCheckpoints().size());
 
@@ -40,7 +40,7 @@ std::vector<Point> GenerateLayout(int argc, char** argv) {
   double min_throughput = std::numeric_limits<double>::max();
   std::optional<Assignment> best_assignment;
 
-  const size_t steps = 3;
+  const size_t steps = 10;
   for (size_t i = 0; i < steps; ++i) {
     for (auto& chromosome : generation.GetChromosomesMutable()) {
       task_assigner = task_assigner_init;

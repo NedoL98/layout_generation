@@ -36,7 +36,7 @@ size_t CalculateCost(const std::vector<std::vector<Point>>& paths) {
 }
 
 double CalculateThroughput(const std::vector<std::vector<Point>>& paths, const size_t assignments) {
-  return CalculateCost(paths) / static_cast<double>(assignments);
+  return static_cast<double>(assignments) / CalculateCost(paths);
 }
 
 std::shared_ptr<ConflictBase> FindFirstConflict(
