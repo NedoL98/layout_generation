@@ -2,7 +2,7 @@ import argparse
 import pygame as pg
 import re
 
-SCREEN_SIZE = [1920, 1180]
+SCREEN_SIZE = [1920, 1200]
 
 class Assignment:
     def __init__(self, start, finish):
@@ -196,6 +196,12 @@ def visualize(width, height, paths, agent_checkpoints, agents_location_to_visit,
                 font_done = pg.font.SysFont('Arial', text_size).render(" Done", True, (0, 255, 0))
                 pos_done = font.get_size()
                 screen.blit(font_done, (pos_done[0], board_lower_pos + text_size * agent_idx))
+
+        text = "Timestamp: {}".format(str(cur_idx))
+        font = pg.font.SysFont('Arial', text_size).render(text, True, (0, 0, 0))
+        pos = (0, board_lower_pos + text_size * len(agents.agents))
+        screen.blit(font, pos)
+
         pg.display.update()
         for e in pg.event.get():
             if e.type == pg.KEYDOWN:
