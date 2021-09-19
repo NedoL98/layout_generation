@@ -90,6 +90,10 @@ std::optional<Point> Graph::GetAnyNearSpareLocation(const Point& pos) const {
   }
 }
 
+size_t Graph::GetTimeToWaitNearCheckpoints() const {
+  return time_to_wait_near_checkpoints;
+}
+
 void Graph::ShuffleCheckpoints(const size_t seed) {
   srand(seed);
   std::random_shuffle(eject_checkpoints.begin(), eject_checkpoints.end());

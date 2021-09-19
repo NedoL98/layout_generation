@@ -14,6 +14,7 @@ struct Point {
 
   bool operator == (const Point& other) const;
   bool operator < (const Point& other) const;
+  bool operator > (const Point& other) const;
   bool operator != (const Point& other) const;
 
   int x;

@@ -1,14 +1,23 @@
 #include "AStar.h"
 
+#include <unordered_set>
+
 struct AStarState {
   std::vector<Point> path;
   size_t label;
   size_t ts;
+  std::optional<size_t> waiting_duration_opt;
 
   size_t LowerBoundToGoal(const Point& goal) const {
     assert(!path.empty() && "error, path is empty!");
     return std::abs(path.back().x - goal.x) + std::abs(path.back().y - goal.y);
   }
+};
+
+struct AStarUsedState {
+  Point point;
+  size_t ts;
+  std::optional<size_t> waiting_duration_opt;
 };
 
 std::vector<Point> AStar(
@@ -32,21 +41,45 @@ std::vector<Point> AStar(
           < s2.ts + s2.LowerBoundToGoal(agent.locations_to_visit[s2.label]);
     }
   };
+
+  auto used_states_cmp = [](const AStarUsedState& s1, const AStarUsedState& s2) {
+    if (s1.ts < s2.ts) {
+      return false;
+    } else if (s1.ts > s2.ts) {
+      return true;
+    } else {
+      if (s1.point < s2.point) {
+        return false;
+      } else if (s1.point > s2.point) {
+        return true;
+      } else {
+        return s1.waiting_duration_opt < s2.waiting_duration_opt;
+      }
+    }
+  };
+
   std::multiset<AStarState, decltype(states_cmp)> states(states_cmp);
-  // {position, ts}
-  std::set<std::pair<Point, size_t>> used;
+  std::set<AStarUsedState, decltype(used_states_cmp)> used(used_states_cmp);
 
   size_t start_ts = 0;
   while (states.empty()) {
     if (!vertex_conflicts.count(start_ts) || !vertex_conflicts.at(start_ts).count(agent.start)) {
-      states.insert({{agent.start}, 0, start_ts});
-      used.insert({agent.start, start_ts});
+      states.insert({{agent.start}, 0, start_ts, std::nullopt});
+      used.insert({agent.start, 0, std::nullopt});
     }
     ++start_ts;
   }
 
-  const auto do_visit = [&] (const Point& position, const Point& next_position, const size_t ts) {
-    if (used.count({next_position, ts})) {
+  const auto do_visit = [&] (
+      const Point& position,
+      const Point& next_position,
+      const size_t ts,
+      const std::optional<size_t>& waiting_duration_opt) {
+    if (position != next_position && waiting_duration_opt) {
+      // Need to wait at checkpoint
+      return false;
+    }
+    if (used.count({next_position, ts, waiting_duration_opt})) {
       // State was visited earlier
       return false;
     }
@@ -88,7 +121,7 @@ std::vector<Point> AStar(
     const size_t ts = cur_state.ts;
 
     for (const auto& neighbour : neighbours) {
-      if (!do_visit(cur_state.path.back(), neighbour, ts + 1)) {
+      if (!do_visit(cur_state.path.back(), neighbour, ts + 1, cur_state.waiting_duration_opt)) {
         continue;
       }
       auto new_path = cur_state.path;
@@ -98,6 +131,15 @@ std::vector<Point> AStar(
       new_state.path = new_path;
       if (new_state.path.back() == agent.locations_to_visit[new_state.label]) {
         ++new_state.label;
+        if (graph.GetTimeToWaitNearCheckpoints() > 0) {
+          new_state.waiting_duration_opt = 1;
+        }
+      } else if (new_state.waiting_duration_opt) {
+        if (new_state.waiting_duration_opt.value() + 1 >= graph.GetTimeToWaitNearCheckpoints()) {
+          new_state.waiting_duration_opt = std::nullopt;
+        } else {
+          ++new_state.waiting_duration_opt.value();
+        }
       }
       ++new_state.ts;
 

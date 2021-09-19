@@ -15,13 +15,14 @@ void Agent::PrintDebugInfo(std::ostream& ostream) const {
   ostream << std::endl;
 }
 
-size_t Agent::CalculateLowerBound() const {
+size_t Agent::CalculateLowerBound(const size_t waiting_duration) const {
   size_t result = 0;
   for (size_t i = 0; i < locations_to_visit.size(); ++i) {
     const Point& prev_location = (i == 0) ? start : locations_to_visit[i - 1];
     const Point& cur_location = locations_to_visit[i];
     result += std::abs(prev_location.x - cur_location.x)
-        + std::abs(prev_location.y - cur_location.y);
+        + std::abs(prev_location.y - cur_location.y)
+        + 2 * waiting_duration;
   }
   return result;
 }
@@ -66,7 +67,7 @@ void Agents::UpdateTasksLists(
   std::cerr << "updating tasks list : " << std::endl;
   for (auto& agent : agents) {
     // todo: optimize this
-    while (agent.CalculateLowerBound() < window_size) {
+    while (agent.CalculateLowerBound(graph.GetTimeToWaitNearCheckpoints()) < window_size) {
       const auto next_task_opt = task_assigner.GetNextAssignment();
       if (next_task_opt) {
         const Point& start_checkpoint_position =

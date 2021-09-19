@@ -6,7 +6,7 @@
 #include "common.h"
 #include "yaml-cpp/yaml.h"
 
-class Graph{
+class Graph {
 public:
   Graph(const YAML::Node& yaml_graph);
   Graph(const char* filename);
@@ -17,6 +17,7 @@ public:
 
   std::vector<Point> GetNeighbours(const Point& pos, const bool with_pos = true) const;
   std::optional<Point> GetAnyNearSpareLocation(const Point& pos) const;
+  size_t GetTimeToWaitNearCheckpoints() const;
   void ShuffleCheckpoints(const size_t seed = 42);
   void ApplyPermutation(
       const std::vector<size_t>& eject_checkpoints_permutation,
@@ -30,4 +31,5 @@ private:
   std::set<Point> obstacles;
   std::vector<Point> eject_checkpoints;
   std::vector<Point> induct_checkpoints;
+  size_t time_to_wait_near_checkpoints = 3;
 };

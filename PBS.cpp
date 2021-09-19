@@ -164,6 +164,7 @@ std::vector<std::vector<Point>> PriorityBasedSearch(
   bool has_tasks = false;
   do {
     agents.UpdateTasksLists(task_assigner, window_size, graph);
+    // todo : fix bug with not waiting after new window size
     const auto paths_prefixes = MakePBSIteration(agents, graph, task_assigner, window_size);
     has_tasks = agents.DeleteCompletedTasks(paths_prefixes, window_size);
     std::cerr << "remaining tasks : " << task_assigner.RemainingTasks() << std::endl;

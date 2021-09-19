@@ -19,6 +19,10 @@ bool Point::operator < (const Point& other) const {
   return x < other.x || (x == other.x && y < other.y);
 }
 
+bool Point::operator > (const Point& other) const {
+  return !(*this < other) && !(*this == other);
+}
+
 bool Point::operator != (const Point& other) const {
   return !(*this == other);
 }

@@ -20,7 +20,7 @@ struct Agent {
     , id(id_) {}
 
   void PrintDebugInfo(std::ostream& ostream) const;
-  size_t CalculateLowerBound() const;
+  size_t CalculateLowerBound(const size_t waiting_duration) const;
 };
 
 class Agents {
