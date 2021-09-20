@@ -55,7 +55,9 @@ std::shared_ptr<ConflictBase> FindFirstConflict(
   }
   std::map<Point, size_t> position_to_agent;
   std::map<Edge, size_t> edge_to_agent;
-  for (size_t ts = 0; ts < max_timestamp; ++ts) {
+  // todo : ts == 0 breaks the case when one agent is done
+  // and another one is trying to go through it. Fix this
+  for (size_t ts = 1; ts < max_timestamp; ++ts) {
     position_to_agent.clear();
     edge_to_agent.clear();
     for (size_t agent_id = 0; agent_id < paths.size(); ++agent_id) {
