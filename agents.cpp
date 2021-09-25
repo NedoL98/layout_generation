@@ -22,7 +22,7 @@ size_t Agent::CalculateLowerBound(const size_t waiting_duration) const {
     const Point& cur_location = locations_to_visit[i];
     result += std::abs(prev_location.x - cur_location.x)
         + std::abs(prev_location.y - cur_location.y)
-        + 2 * waiting_duration;
+        + (waiting_duration - 1);
   }
   return result;
 }

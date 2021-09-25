@@ -20,6 +20,7 @@ struct Agent {
     , id(id_) {}
 
   void PrintDebugInfo(std::ostream& ostream) const;
+  // This provides a correct lower bound for an agent to visit all of his active checkpoints
   size_t CalculateLowerBound(const size_t waiting_duration) const;
 };
 
