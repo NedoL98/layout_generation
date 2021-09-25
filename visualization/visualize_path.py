@@ -2,7 +2,7 @@ import argparse
 import pygame as pg
 import re
 
-SCREEN_SIZE = [1920, 1200]
+SCREEN_SIZE = [1920, 1080]
 
 class Assignment:
     def __init__(self, start, finish):
@@ -66,22 +66,17 @@ def parse_checkpoints(line):
     return checkpoints
 
 def parse_output_file(mapf_output_file_path):
-    paths_raw = []
+    paths = []
     agent_checkpoints = []
     agent_locations_to_visit = []
     for line in open(mapf_output_file_path, "r").readlines():
         if line.startswith("Path for agent"):
-            paths_raw.append(parse_path(line))
+            paths.append(parse_path(line))
         elif line.startswith("All assignments for agent"):
             agent_checkpoints.append(parse_checkpoints(line))
         elif line.startswith("All locations to visit for agent"):
             agent_locations_to_visit.append(parse_checkpoints(line))
-    max_path_len = max([len(path) for path in paths_raw])
-    paths = []
-    for path in paths_raw:
-        paths.append(path)
-        while len(paths[-1]) < max_path_len:
-            paths[-1].append(paths[-1][-1])
+    max_path_len = max([len(path) for path in paths])
     return paths, agent_checkpoints, agent_locations_to_visit
 
 def generate_square_polygon(w_idx, h_idx, scale = 10, margin = 2):
@@ -111,14 +106,14 @@ def draw_empty_board(screen, width, height, scale, margin, induct_points, agent_
             pg.draw.polygon(screen, color, generate_square_polygon(w, h, scale, margin))
 
 def draw_positions(paths, tick, screen, width, height, induct_points, agent_checkpoints):
-    scale = min(SCREEN_SIZE[0] / width, SCREEN_SIZE[1] / height)
+    scale = min(SCREEN_SIZE[0] / width, (SCREEN_SIZE[1] - (len(paths) + 1) * 25) / height)
     margin = 2
     scale -= margin
     draw_empty_board(screen, width, height, scale, margin, induct_points, agent_checkpoints)
     for agent_idx, path in enumerate(paths):
         pos = None
         if tick >= len(path):
-            pos = path[-1]
+            continue
         else:
             pos = path[tick]
         polygon_points = generate_square_polygon(int(pos[0]), int(pos[1]), scale, margin)
@@ -154,14 +149,19 @@ class Agent:
 class Agents:
     def __init__(self, agents):
         self.agents = agents
+        self.ts = 0
 
     def move_forward(self):
+        self.ts += 1
         for agent in self.agents:
-            agent.move_forward()
+            if self.ts < len(agent.path):
+                agent.move_forward()
 
     def move_backwards(self):
+        self.ts -= 1
         for agent in self.agents:
-            agent.move_backwards()
+            if self.ts + 1 < len(agent.path):
+                agent.move_backwards()
 
 def visualize(width, height, paths, agent_checkpoints, agents_location_to_visit,
         induct_points, eject_points):
@@ -172,7 +172,6 @@ def visualize(width, height, paths, agent_checkpoints, agents_location_to_visit,
     clock = pg.time.Clock()
     done = False
     cur_idx = 0
-    max_idx = max([len(path) for path in paths]) - 1
 
     hold_left = False
     hold_right = False
@@ -223,7 +222,7 @@ def visualize(width, height, paths, agent_checkpoints, agents_location_to_visit,
                     hold_right = False
 
         if hold_right:
-            cur_idx = min(cur_idx + 1, max_idx)
+            cur_idx += 1
             agents.move_forward()
         elif hold_left:
             cur_idx = max(cur_idx - 1, 0)
