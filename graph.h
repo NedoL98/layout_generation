@@ -31,5 +31,5 @@ private:
   std::set<Point> obstacles;
   std::vector<Point> eject_checkpoints;
   std::vector<Point> induct_checkpoints;
-  size_t time_to_wait_near_checkpoints = 3;
+  size_t time_to_wait_near_checkpoints = 1;
 };

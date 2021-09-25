@@ -37,15 +37,20 @@ bool HasConflict(const std::vector<Point>& lhs, const std::vector<Point>& rhs) {
   return false;
 }
 
-void UpdatePaths(
+bool UpdatePaths(
     const Agents& agents,
     const Graph& graph,
     PBSState& pbs_state,
     const std::optional<size_t> update_path_for) {
-  const std::vector<size_t> topsort_order = TopSort(pbs_state.priority_graph);
+  const auto topsort_order_opt = TopSort(pbs_state.priority_graph);
+  if (!topsort_order_opt) {
+    std::cerr << "Topsort order is inconsistent!" << std::endl;
+    return false;
+  }
 
   std::vector<bool> path_updated(agents.GetSize(), false);
 
+  const auto& topsort_order = topsort_order_opt.value();
   for (size_t i = 0; i < topsort_order.size(); ++i) {
     const size_t agent_id = topsort_order[i];
     const Agent& agent = agents.At(agent_id);
@@ -63,7 +68,7 @@ void UpdatePaths(
         std::cref(pbs_state.paths),
         std::cref(topsort_order),
         i);
-        path_updated[agent_id] = true;
+      path_updated[agent_id] = true;
     } else {
       // Update path only for the chosen agent and for all conflicting agents with lower priority
       assert(update_path_for.value() < agents.GetSize());
@@ -90,6 +95,7 @@ void UpdatePaths(
       }
     }
   }
+  return true;
 }
 
 std::vector<std::vector<Point>> MakePBSIteration(
@@ -101,7 +107,7 @@ std::vector<std::vector<Point>> MakePBSIteration(
   std::multiset<PBSState, decltype(states_cmp)> states(states_cmp);
 
   PBSState root(agents.GetSize());
-  UpdatePaths(agents, graph, root, std::nullopt);
+  assert(UpdatePaths(agents, graph, root, std::nullopt));
   root.cost = CalculateCost(root.paths);
   states.insert(root);
 
@@ -131,9 +137,9 @@ std::vector<std::vector<Point>> MakePBSIteration(
     }
 
     state.priority_graph[agent_id_high_priority].push_back(agent_id_low_priority);
-    UpdatePaths(agents, graph, state, agent_id_low_priority);
 
-    if (state.paths[agent_id_low_priority].empty()) {
+    if (!UpdatePaths(agents, graph, state, agent_id_low_priority)
+        || state.paths[agent_id_low_priority].empty()) {
       return;
     }
     state.cost = CalculateCost(state.paths);
@@ -170,6 +176,9 @@ std::vector<std::vector<Point>> PriorityBasedSearch(
     std::cerr << "remaining tasks : " << task_assigner.RemainingTasks() << std::endl;
     for (size_t i = 0; i < paths_prefixes.size(); ++i) {
       for (size_t j = 0; j < std::min(window_size, paths_prefixes[i].size()); ++j) {
+        if (j == 0 && !result[i].empty()) {
+          continue;
+        }
         result[i].push_back(paths_prefixes[i][j]);
       }
     }

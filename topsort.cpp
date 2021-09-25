@@ -20,7 +20,7 @@ void DFS(
 
 }
 
-std::vector<size_t> TopSort(const std::vector<std::vector<size_t>>& priority_graph) {
+std::optional<std::vector<size_t>> TopSort(const std::vector<std::vector<size_t>>& priority_graph) {
   std::vector<bool> used(priority_graph.size(), false);
   std::vector<size_t> result;
   result.reserve(priority_graph.size());
@@ -30,5 +30,18 @@ std::vector<size_t> TopSort(const std::vector<std::vector<size_t>>& priority_gra
     }
   }
   std::reverse(result.begin(), result.end());
+
+  std::vector<size_t> vertex_to_pos(result.size());
+  for (size_t i = 0; i < result.size(); ++i) {
+    vertex_to_pos[result[i]] = i;
+  }
+  for (size_t v = 0; v < priority_graph.size(); ++v) {
+    for (const auto u : priority_graph[v]) {
+      if (vertex_to_pos[v] > vertex_to_pos[u]) {
+        return std::nullopt;
+      }
+    }
+  }
+
   return result;
 }

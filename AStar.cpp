@@ -102,8 +102,8 @@ std::vector<Point> AStar(
           return false;
         }
         if (ts > 0) {
-          if (paths_opt->get()[agent_idx][ts] == next_position
-              && paths_opt->get()[agent_idx][ts - 1] == position) {
+          if (paths_opt->get()[agent_idx][ts] == position
+              && paths_opt->get()[agent_idx][ts - 1] == next_position) {
             // Has edge conflict with higher priority agent
             return false;
           }
@@ -129,21 +129,22 @@ std::vector<Point> AStar(
 
       AStarState new_state = cur_state;
       new_state.path = new_path;
-      if (new_state.path.back() == agent.locations_to_visit[new_state.label]) {
-        ++new_state.label;
-        if (graph.GetTimeToWaitNearCheckpoints() > 0) {
-          new_state.waiting_duration_opt = 1;
-        }
-      } else if (new_state.waiting_duration_opt) {
+      if (new_state.waiting_duration_opt) {
         if (new_state.waiting_duration_opt.value() + 1 >= graph.GetTimeToWaitNearCheckpoints()) {
           new_state.waiting_duration_opt = std::nullopt;
         } else {
           ++new_state.waiting_duration_opt.value();
         }
+      } else if (new_state.path.back() == agent.locations_to_visit[new_state.label]) {
+        ++new_state.label;
+        if (graph.GetTimeToWaitNearCheckpoints() > 1) {
+          new_state.waiting_duration_opt = 1;
+        }
       }
       ++new_state.ts;
 
-      if (new_state.label == agent.locations_to_visit.size()) {
+      if (new_state.label == agent.locations_to_visit.size()
+          && (!new_state.waiting_duration_opt || graph.GetTimeToWaitNearCheckpoints() <= 1)) {
         // AStar done
         return new_state.path;
       }
