@@ -12,7 +12,7 @@ Graph::Graph(const YAML::Node& yaml_graph) {
   }
 }
 
-Graph::Graph(const char* filename) {
+Graph::Graph(const char* filename, const double deleted_eject_checkpoints_ratio) {
   std::ifstream graph_file(filename);
   std::string line;
   std::getline(graph_file, line);
@@ -41,6 +41,17 @@ Graph::Graph(const char* filename) {
       std::cerr << "Unknown cell type : " << tokens[1] << std::endl;
       exit(0);
     }
+  }
+  std::vector<size_t> kept_eject_checkpoints_idx(eject_checkpoints.size());
+  std::iota(kept_eject_checkpoints_idx.begin(), kept_eject_checkpoints_idx.end(), 0);
+  std::random_shuffle(kept_eject_checkpoints_idx.begin(), kept_eject_checkpoints_idx.end());
+  kept_eject_checkpoints_idx.resize(
+      kept_eject_checkpoints_idx.size() * deleted_eject_checkpoints_ratio);
+  std::vector<Point> eject_checkpoints_tmp = std::move(eject_checkpoints);
+  eject_checkpoints.clear();
+  eject_checkpoints.reserve(kept_eject_checkpoints_idx.size());
+  for (size_t i = 0; i < kept_eject_checkpoints_idx.size(); ++i) {
+    eject_checkpoints.push_back(eject_checkpoints_tmp[kept_eject_checkpoints_idx[i]]);
   }
 }
 

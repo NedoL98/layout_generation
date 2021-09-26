@@ -13,9 +13,12 @@
 #include <unordered_map>
 
 int main(int argc, char** argv) {
-  if (argc != 2) {
-    std::cerr << "path to data file is not specified" << std::endl;
-    return 0;
+  if (argc != 4) {
+    std::cerr << "please specify following params: " << std::endl;
+    std::cerr << "    - path to data file" << std::endl;
+    std::cerr << "    - number of assignments" << std::endl;
+    std::cerr << "    - deleted eject checkpoint ratio" << std::endl;
+    exit(0);
   }
   /*
   YAML::Node yaml_config = YAML::LoadFile(argv[1]);
@@ -24,8 +27,9 @@ int main(int argc, char** argv) {
   assert(yaml_config["agents"] && "No agents found in config file");
   Agents agents(yaml_config["agents"]);
   */
-  Graph graph(argv[1]);
-  TaskAssigner task_assigner(graph, 100);
+  Graph graph(argv[1], std::stod(argv[3]));
+  const size_t assignments_cnt = std::atoi(argv[2]);
+  TaskAssigner task_assigner(graph, assignments_cnt);
   // Set chosen eject checkpoints as obstacles
   graph.SetEjectCheckpointsAsObstacles(task_assigner.GetAllRemainingAssigments());
   Agents agents(graph, 10);

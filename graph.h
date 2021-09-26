@@ -9,7 +9,7 @@
 class Graph {
 public:
   Graph(const YAML::Node& yaml_graph);
-  Graph(const char* filename);
+  Graph(const char* filename, const double deleted_eject_checkpoints_ratio);
 
   const std::vector<Point>& GetEjectCheckpoints() const;
   const std::vector<Point>& GetInductCheckpoints() const;

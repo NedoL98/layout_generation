@@ -15,13 +15,16 @@
 #include <unordered_map>
 
 std::vector<Point> GenerateLayout(int argc, char** argv) {
-  if (argc != 2) {
-    std::cerr << "path to data file is not specified" << std::endl;
+  if (argc != 4) {
+    std::cerr << "please specify following params: " << std::endl;
+    std::cerr << "    - path to data file" << std::endl;
+    std::cerr << "    - number of assignments" << std::endl;
+    std::cerr << "    - deleted eject checkpoint ratio" << std::endl;
     exit(0);
   }
-  Graph graph(argv[1]);
-  const size_t assignments = 100;
-  const TaskAssigner task_assigner_init(graph, assignments);
+  Graph graph(argv[1], std::stod(argv[3]));
+  const size_t assignments_cnt = std::atoi(argv[2]);
+  TaskAssigner task_assigner_init(graph, assignments_cnt);
   TaskAssigner task_assigner = task_assigner_init;
   const Agents agents_init(graph, 10);
   Agents agents = agents_init;
@@ -48,7 +51,7 @@ std::vector<Point> GenerateLayout(int argc, char** argv) {
       graph.ApplyPermutation(
           chromosome.eject_checkpoints_permutation, chromosome.induct_checkpoints_permutation);
       auto paths = PriorityBasedSearch(agents, graph, task_assigner, 30);
-      const double throughput = CalculateThroughput(paths, assignments);
+      const double throughput = CalculateThroughput(paths, assignments_cnt);
       chromosome.SetScore(throughput);
       std::cerr << "PF result throughput : " << throughput << std::endl;
       if (!best_assignment || best_assignment->throughput < throughput) {
