@@ -42,16 +42,18 @@ Graph::Graph(const char* filename, const double deleted_eject_checkpoints_ratio)
       exit(0);
     }
   }
-  std::vector<size_t> kept_eject_checkpoints_idx(eject_checkpoints.size());
-  std::iota(kept_eject_checkpoints_idx.begin(), kept_eject_checkpoints_idx.end(), 0);
-  std::random_shuffle(kept_eject_checkpoints_idx.begin(), kept_eject_checkpoints_idx.end());
-  kept_eject_checkpoints_idx.resize(
-      kept_eject_checkpoints_idx.size() * deleted_eject_checkpoints_ratio);
-  std::vector<Point> eject_checkpoints_tmp = std::move(eject_checkpoints);
-  eject_checkpoints.clear();
-  eject_checkpoints.reserve(kept_eject_checkpoints_idx.size());
-  for (size_t i = 0; i < kept_eject_checkpoints_idx.size(); ++i) {
-    eject_checkpoints.push_back(eject_checkpoints_tmp[kept_eject_checkpoints_idx[i]]);
+  if (deleted_eject_checkpoints_ratio < 1.0) {
+    std::vector<size_t> kept_eject_checkpoints_idx(eject_checkpoints.size());
+    std::iota(kept_eject_checkpoints_idx.begin(), kept_eject_checkpoints_idx.end(), 0);
+    std::random_shuffle(kept_eject_checkpoints_idx.begin(), kept_eject_checkpoints_idx.end());
+    kept_eject_checkpoints_idx.resize(
+        kept_eject_checkpoints_idx.size() * deleted_eject_checkpoints_ratio);
+    std::vector<Point> eject_checkpoints_tmp = std::move(eject_checkpoints);
+    eject_checkpoints.clear();
+    eject_checkpoints.reserve(kept_eject_checkpoints_idx.size());
+    for (size_t i = 0; i < kept_eject_checkpoints_idx.size(); ++i) {
+      eject_checkpoints.push_back(eject_checkpoints_tmp[kept_eject_checkpoints_idx[i]]);
+    }
   }
 }
 
@@ -133,5 +135,17 @@ void Graph::ApplyPermutation(
 void Graph::SetEjectCheckpointsAsObstacles(const std::vector<Assignment>& assignments) {
   for (const auto& assignment : assignments) {
     obstacles.insert(eject_checkpoints[assignment.finish_checkpoint_idx]);
+  }
+}
+
+void Graph::KeepOnlySelectedCheckpoints(const std::vector<size_t>& eject_checkpoint_indices) {
+  auto eject_checkpoints_tmp = std::move(eject_checkpoints);
+  eject_checkpoints.clear();
+  eject_checkpoints.reserve(eject_checkpoint_indices.size());
+  for (const auto idx : eject_checkpoint_indices) {
+    eject_checkpoints.push_back(eject_checkpoints_tmp[idx]);
+  }
+  for (const auto& eject_checkpoint : eject_checkpoints) {
+    obstacles.insert(eject_checkpoint);
   }
 }

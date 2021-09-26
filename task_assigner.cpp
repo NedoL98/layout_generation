@@ -2,10 +2,12 @@
 
 #include <cassert>
 
-TaskAssigner::TaskAssigner(const Graph& graph, const size_t assignments_cnt, const size_t seed) {
+TaskAssigner::TaskAssigner(
+    const size_t induct_checkpoints_size,
+    const size_t eject_checkpoints_size,
+    const size_t assignments_cnt,
+    const size_t seed) {
   srand(seed);
-  const size_t induct_checkpoints_size = graph.GetInductCheckpoints().size();
-  const size_t eject_checkpoints_size = graph.GetEjectCheckpoints().size();
   assert(induct_checkpoints_size > 0 && "Need at least one induct checkpoint!");
   assert(eject_checkpoints_size > 0 && "Need at least one eject checkpoint!");
   if (assignments_cnt < std::max(induct_checkpoints_size, eject_checkpoints_size)) {
@@ -40,6 +42,13 @@ TaskAssigner::TaskAssigner(const Graph& graph, const size_t assignments_cnt, con
   }
   std::random_shuffle(assignments.begin(), assignments.end());
 }
+
+TaskAssigner::TaskAssigner(const Graph& graph, const size_t assignments_cnt, const size_t seed)
+    : TaskAssigner(
+        graph.GetInductCheckpoints().size(),
+        graph.GetEjectCheckpoints().size(),
+        assignments_cnt,
+        seed) {}
 
 std::vector<Assignment> TaskAssigner::GetAllRemainingAssigments() const {
   return std::vector<Assignment>(assignments.begin(), assignments.end());

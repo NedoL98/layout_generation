@@ -8,6 +8,11 @@
 
 class TaskAssigner {
 public:
+  TaskAssigner(
+    const size_t induct_checkpoints_size,
+    const size_t eject_checkpoints_size,
+    const size_t assignments_cnt,
+    const size_t seed = 42);
   TaskAssigner(const Graph& graph, const size_t assignments_cnt, const size_t seed = 42);
 
   std::vector<Assignment> GetAllRemainingAssigments() const;

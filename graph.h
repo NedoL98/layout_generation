@@ -8,6 +8,7 @@
 
 class Graph {
 public:
+  Graph() = default;
   Graph(const YAML::Node& yaml_graph);
   Graph(const char* filename, const double deleted_eject_checkpoints_ratio);
 
@@ -24,6 +25,7 @@ public:
       const std::vector<size_t>& induct_checkpoints_permutation);
 
   void SetEjectCheckpointsAsObstacles(const std::vector<Assignment>& assignments);
+  void KeepOnlySelectedCheckpoints(const std::vector<size_t>& eject_checkpoint_indices);
 
 private:
   int width;

@@ -2,11 +2,10 @@
 
 #include <algorithm>
 #include <cassert>
+#include <iostream>
 #include <random>
 
-void Chromosome::Init(
-    const size_t eject_checkpoints_num,
-    const size_t induct_checkpoints_num) {
+void Chromosome::Init(const size_t eject_checkpoints_num, const double ratio_to_keep) {
   const auto iota_and_shuffle = [] (std::vector<size_t>& vec, const size_t size) {
     vec.resize(size);
     std::iota(vec.begin(), vec.end(), 0);
@@ -14,7 +13,7 @@ void Chromosome::Init(
   };
 
   iota_and_shuffle(eject_checkpoints_permutation, eject_checkpoints_num);
-  iota_and_shuffle(induct_checkpoints_permutation, induct_checkpoints_num);
+  eject_checkpoints_permutation.resize(eject_checkpoints_permutation.size() * ratio_to_keep);
 }
 
 void Chromosome::Crossover(const Chromosome& /* other */) {
@@ -28,24 +27,17 @@ void Chromosome::Mutate() {
           eject_checkpoints_permutation[rand() % eject_checkpoints_permutation.size()]);
     }
   }
-  for (auto& checkpoint_pos : induct_checkpoints_permutation) {
-    if (rand() / static_cast<double>(RAND_MAX) < 0.05) {
-      std::swap(
-          checkpoint_pos,
-          eject_checkpoints_permutation[rand() % induct_checkpoints_permutation.size()]);
-    }
-  }
 }
 
 Generation::Generation(
       const size_t generation_size,
       const size_t eject_checkpoints,
-      const size_t induct_checkpoints,
+      const double kept_checkpoint_ratio,
       const size_t seed) {
   srand(seed);
   chromosomes.resize(generation_size);
   for (Chromosome& chromosome : chromosomes) {
-    chromosome.Init(eject_checkpoints, induct_checkpoints);
+    chromosome.Init(eject_checkpoints, kept_checkpoint_ratio);
   }
 }
 

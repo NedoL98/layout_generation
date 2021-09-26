@@ -4,9 +4,7 @@
 #include <vector>
 
 struct Chromosome {
-  void Init(
-      const size_t eject_checkpoints_num,
-      const size_t induct_checkpoints_num);
+  void Init(const size_t eject_checkpoints_num, const double ratio_to_keep);
 
   void Crossover(const Chromosome& other);
   void Mutate();
@@ -15,7 +13,6 @@ struct Chromosome {
   }
 
   std::vector<size_t> eject_checkpoints_permutation;
-  std::vector<size_t> induct_checkpoints_permutation;
   std::optional<double> score_opt;
 };
 
@@ -25,7 +22,7 @@ public:
   Generation(
       const size_t generation_size,
       const size_t eject_checkpoints_num,
-      const size_t induct_checkpoints_num,
+      const double kept_checkpoint_ratio,
       const size_t seed = 42);
 
   const std::vector<Chromosome>& GetChromosomes() const {

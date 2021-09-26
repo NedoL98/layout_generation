@@ -22,46 +22,48 @@ std::vector<Point> GenerateLayout(int argc, char** argv) {
     std::cerr << "    - deleted eject checkpoint ratio" << std::endl;
     exit(0);
   }
-  Graph graph(argv[1], std::stod(argv[3]));
+  Graph graph_full(argv[1], 1.0);
   const size_t assignments_cnt = std::atoi(argv[2]);
-  TaskAssigner task_assigner_init(graph, assignments_cnt);
+  const double kept_checkpoint_ratio = std::stod(argv[3]);
+  TaskAssigner task_assigner_init(
+      graph_full.GetInductCheckpoints().size() * kept_checkpoint_ratio,
+      graph_full.GetEjectCheckpoints().size() * kept_checkpoint_ratio,
+      assignments_cnt);
   TaskAssigner task_assigner = task_assigner_init;
-  const Agents agents_init(graph, 10);
+  const Agents agents_init(graph_full, 10);
   Agents agents = agents_init;
-  const size_t generation_size = 5;
+  const size_t generation_size = 3;
   Generation generation(
-      generation_size, graph.GetEjectCheckpoints().size(), graph.GetInductCheckpoints().size());
-
+      generation_size, graph_full.GetEjectCheckpoints().size(), kept_checkpoint_ratio);
 
   struct Assignment {
     std::vector<std::vector<Point>> paths;
     double throughput;
-    std::vector<size_t> eject_checkpoints_permutation;
-    std::vector<size_t> induct_checkpoints_permutation;
+    std::vector<size_t> eject_checkpoints_indices;
+    Graph graph;
   };
   double total_throughput = 0.0;
   double min_throughput = std::numeric_limits<double>::max();
   std::optional<Assignment> best_assignment;
 
-  const size_t steps = 10;
+  const size_t steps = 3;
   for (size_t i = 0; i < steps; ++i) {
     for (auto& chromosome : generation.GetChromosomesMutable()) {
+      Graph graph = graph_full;
+      graph.KeepOnlySelectedCheckpoints(chromosome.eject_checkpoints_permutation);
       task_assigner = task_assigner_init;
       agents = agents_init;
-      graph.ApplyPermutation(
-          chromosome.eject_checkpoints_permutation, chromosome.induct_checkpoints_permutation);
       auto paths = PriorityBasedSearch(agents, graph, task_assigner, 30);
       const double throughput = CalculateThroughput(paths, assignments_cnt);
       chromosome.SetScore(throughput);
-      std::cerr << "PF result throughput : " << throughput << std::endl;
       if (!best_assignment || best_assignment->throughput < throughput) {
         if (!best_assignment) {
           best_assignment = Assignment();
         }
         best_assignment->paths = std::move(paths);
         best_assignment->throughput = throughput;
-        best_assignment->eject_checkpoints_permutation = chromosome.eject_checkpoints_permutation;
-        best_assignment->induct_checkpoints_permutation = chromosome.induct_checkpoints_permutation;
+        best_assignment->eject_checkpoints_indices = chromosome.eject_checkpoints_permutation;
+        best_assignment->graph = graph;
       }
       min_throughput = std::min(min_throughput, throughput);
       total_throughput += throughput;
