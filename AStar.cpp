@@ -120,6 +120,12 @@ std::vector<Point> AStar(
     const auto neighbours = graph.GetNeighbours(cur_state.path.back());
     const size_t ts = cur_state.ts;
 
+    // todo : fix this
+    if (ts >= 10 * 1000) {
+      std::cerr << "AStar is stuck on " << agent.id << "!" << std::endl;
+      return {};
+    }
+
     for (const auto& neighbour : neighbours) {
       if (!do_visit(cur_state.path.back(), neighbour, ts + 1, cur_state.waiting_duration_opt)) {
         continue;
