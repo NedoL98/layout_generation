@@ -41,6 +41,7 @@ std::vector<Point> GenerateLayout(int argc, char** argv) {
     double throughput;
     std::vector<size_t> eject_checkpoints_indices;
     Graph graph;
+    Agents agents;
   };
   double total_throughput = 0.0;
   double min_throughput = std::numeric_limits<double>::max();
@@ -64,15 +65,17 @@ std::vector<Point> GenerateLayout(int argc, char** argv) {
         best_assignment->throughput = throughput;
         best_assignment->eject_checkpoints_indices = chromosome.eject_checkpoints_permutation;
         best_assignment->graph = graph;
+        best_assignment->agents = agents;
       }
       min_throughput = std::min(min_throughput, throughput);
       total_throughput += throughput;
     }
+    generation.Evolve();
   }
 
   assert(best_assignment);
   for (size_t i = 0; i < best_assignment->paths.size(); ++i) {
-    const Agent& cur_agent = agents.At(i);
+    const Agent& cur_agent = best_assignment->agents.At(i);
     std::cout << "Path for agent " << cur_agent.id << " : ";
     for (const auto& position : best_assignment->paths[i]) {
       std::cout << position << " ";
@@ -80,9 +83,9 @@ std::vector<Point> GenerateLayout(int argc, char** argv) {
     std::cout << std::endl;
     cur_agent.PrintDebugInfo(std::cout);
   }
-  std::cout << "Worst throughput : " << min_throughput << std::endl;
-  std::cout << "Best throughput : " << best_assignment->throughput << std::endl;
-  std::cout << "Average throughput : "
+  std::cerr << "Worst throughput : " << min_throughput << std::endl;
+  std::cerr << "Best throughput : " << best_assignment->throughput << std::endl;
+  std::cerr << "Average throughput : "
             << total_throughput / (steps * generation_size) << std::endl;
 
   return {};

@@ -26,6 +26,7 @@ struct Agent {
 
 class Agents {
 public:
+  Agents() = default;
   Agents(const YAML::Node& yaml_agents);
   Agents(const Graph& graph, const size_t agents_num, const size_t seed = 42);
 

@@ -32,6 +32,7 @@ Graph::Graph(const char* filename, const double deleted_eject_checkpoints_ratio)
     if (tokens[1] == "Obstacle") {
       obstacles.insert(current_point);
     } else if (tokens[1] == "Eject") {
+      obstacles.insert(current_point);
       eject_checkpoints.push_back(current_point);
     } else if (tokens[1] == "Induct") {
       induct_checkpoints.push_back(current_point);
@@ -145,6 +146,7 @@ void Graph::KeepOnlySelectedCheckpoints(const std::vector<size_t>& eject_checkpo
   for (const auto idx : eject_checkpoint_indices) {
     eject_checkpoints.push_back(eject_checkpoints_tmp[idx]);
   }
+  obstacles.clear();
   for (const auto& eject_checkpoint : eject_checkpoints) {
     obstacles.insert(eject_checkpoint);
   }

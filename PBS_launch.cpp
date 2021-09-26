@@ -43,4 +43,6 @@ int main(int argc, char** argv) {
     std::cout << std::endl;
     cur_agent.PrintDebugInfo(std::cout);
   }
+  const double throughput = CalculateThroughput(paths, assignments_cnt);
+  std::cerr << "Throughtput: " << throughput << std::endl;
 }
