@@ -1,5 +1,6 @@
 #include "task_assigner.h"
 
+#include <algorithm>
 #include <cassert>
 
 TaskAssigner::TaskAssigner(

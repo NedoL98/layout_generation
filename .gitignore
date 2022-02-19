@@ -3,3 +3,4 @@ CMakeFiles/
 CMakeCache.txt
 .vscode
 Makefile
+cmake_install.cmake
