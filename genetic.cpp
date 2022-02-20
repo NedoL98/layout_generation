@@ -52,7 +52,7 @@ void Generation::Evolve() {
     return accumulated + chromosome.score_opt.value();
   });
 
-  const auto best_chromosome_it = std::min_element(
+  const auto best_chromosome_it = std::max_element(
       chromosomes.begin(),
       chromosomes.end(),
       [](const Chromosome& lhs, const Chromosome& rhs) {
