@@ -2,7 +2,7 @@ import argparse
 import pygame as pg
 import re
 
-SCREEN_SIZE = [1920, 1080]
+SCREEN_SIZE = [1440, 810]
 
 class Assignment:
     def __init__(self, start, finish):
@@ -25,6 +25,11 @@ class Assignments:
             result.append(self.starts[i])
             result.append(self.finishes[i])
         return result
+
+    def __repr__(self):
+        for start, finish in zip(self.starts, self.finishes):
+            print('{{{}, {}}}'.format(start, finish))
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
@@ -67,17 +72,17 @@ def parse_checkpoints(line):
 
 def parse_output_file(mapf_output_file_path):
     paths = []
-    agent_checkpoints = []
+    agents_checkpoints = []
     agent_locations_to_visit = []
     for line in open(mapf_output_file_path, "r").readlines():
         if line.startswith("Path for agent"):
             paths.append(parse_path(line))
         elif line.startswith("All assignments for agent"):
-            agent_checkpoints.append(parse_checkpoints(line))
+            agents_checkpoints.append(parse_checkpoints(line))
         elif line.startswith("All locations to visit for agent"):
             agent_locations_to_visit.append(parse_checkpoints(line))
     max_path_len = max([len(path) for path in paths])
-    return paths, agent_checkpoints, agent_locations_to_visit
+    return paths, agents_checkpoints, agent_locations_to_visit
 
 def generate_square_polygon(w_idx, h_idx, scale = 10, margin = 2):
     return [
@@ -86,7 +91,7 @@ def generate_square_polygon(w_idx, h_idx, scale = 10, margin = 2):
         [(w_idx + 1) * (scale + margin) - margin, (h_idx + 1) * (scale + margin) - margin],
         [(w_idx) * (scale + margin), (h_idx + 1) * (scale + margin) - margin]]
 
-def draw_empty_board(screen, width, height, scale, margin, induct_points, agent_checkpoints):
+def draw_empty_board(screen, width, height, scale, margin, agent_checkpoints_starts, agent_checkpoints_finishes):
     total_width = width * (scale + margin)
     total_height = height * (scale + margin)
     pg.draw.polygon(screen, [0, 0, 0], [
@@ -95,21 +100,22 @@ def draw_empty_board(screen, width, height, scale, margin, induct_points, agent_
         [total_width, total_height],
         [0, total_height]
     ])
+
     for w in range(width):
         for h in range(height):
             color = [255, 255, 200]
             assignment = (w, h)
-            if assignment in induct_points:
+            if assignment in agent_checkpoints_starts:
                 color = [0, 255, 0]
-            elif assignment in agent_checkpoints:
+            elif assignment in agent_checkpoints_finishes:
                 color = [0, 0, 255]
             pg.draw.polygon(screen, color, generate_square_polygon(w, h, scale, margin))
 
-def draw_positions(paths, tick, screen, width, height, induct_points, agent_checkpoints):
+def draw_positions(paths, tick, screen, width, height, agent_checkpoints_starts, agent_checkpoints_finishes):
     scale = min(SCREEN_SIZE[0] / width, (SCREEN_SIZE[1] - (len(paths) + 1) * 25) / height)
     margin = 2
     scale -= margin
-    draw_empty_board(screen, width, height, scale, margin, induct_points, agent_checkpoints)
+    draw_empty_board(screen, width, height, scale, margin, agent_checkpoints_starts, agent_checkpoints_finishes)
     for agent_idx, path in enumerate(paths):
         pos = None
         if tick >= len(path):
@@ -163,7 +169,7 @@ class Agents:
             if self.ts + 1 < len(agent.path):
                 agent.move_backwards()
 
-def visualize(width, height, paths, agent_checkpoints, agents_location_to_visit,
+def visualize(width, height, paths, agents_checkpoints, agents_location_to_visit,
         induct_points, eject_points):
     pg.init()
     screen = pg.display.set_mode(SCREEN_SIZE)
@@ -180,11 +186,17 @@ def visualize(width, height, paths, agent_checkpoints, agents_location_to_visit,
     speed_mult = 1.0
 
     agents = Agents([Agent(location_to_visit, path) for location_to_visit, path in zip(agents_location_to_visit, paths)])
-    agent_checkpoints_set = set((elem[0], elem[1]) for sublist in agent_checkpoints for elem in sublist.get_list())
+    agent_checkpoints_starts = set()
+    agent_checkpoints_finishes = set()
+    for agent_checkpoints in agents_checkpoints:
+        for start in agent_checkpoints.starts:
+            agent_checkpoints_starts.add((start[0], start[1]))
+        for finish in agent_checkpoints.finishes:
+            agent_checkpoints_finishes.add((finish[0], finish[1]))
 
     while not done:
         screen.fill([255, 255, 255])
-        board_lower_pos = draw_positions(paths, cur_idx, screen, width, height, induct_points, agent_checkpoints_set)
+        board_lower_pos = draw_positions(paths, cur_idx, screen, width, height, agent_checkpoints_starts, agent_checkpoints_finishes)
         text_size = 25
         for agent_idx, agent in enumerate(agents.agents):
             text = "Agent {} passed {} checkpoints".format(str(agent_idx), agent.passed_checkpoints)
