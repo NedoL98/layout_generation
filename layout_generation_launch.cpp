@@ -15,18 +15,19 @@
 #include <unordered_map>
 
 std::vector<Point> GenerateLayout(int argc, char** argv) {
-  if (argc != 4) {
+  if (argc != 5) {
     std::cerr << "please specify following params: " << std::endl;
     std::cerr << "    - path to data file" << std::endl;
     std::cerr << "    - number of assignments" << std::endl;
     std::cerr << "    - deleted eject checkpoint ratio" << std::endl;
+    std::cerr << "    - number of epochs" << std::endl;
     exit(0);
   }
   Graph graph_full(argv[1], 1.0);
   const size_t assignments_cnt = std::atoi(argv[2]);
   const double kept_checkpoint_ratio = std::stod(argv[3]);
   TaskAssigner task_assigner_init(
-      graph_full.GetInductCheckpoints().size() * kept_checkpoint_ratio,
+      graph_full.GetInductCheckpoints().size(),
       graph_full.GetEjectCheckpoints().size() * kept_checkpoint_ratio,
       assignments_cnt);
   TaskAssigner task_assigner = task_assigner_init;
@@ -47,7 +48,7 @@ std::vector<Point> GenerateLayout(int argc, char** argv) {
   double min_throughput = std::numeric_limits<double>::max();
   std::optional<Assignment> best_assignment;
 
-  const size_t steps = 3;
+  const size_t steps = std::atoi(argv[4]);
   for (size_t i = 0; i < steps; ++i) {
     for (auto& chromosome : generation.GetChromosomesMutable()) {
       Graph graph = graph_full;
