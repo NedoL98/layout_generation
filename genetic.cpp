@@ -4,6 +4,7 @@
 #include <cassert>
 #include <iostream>
 #include <random>
+#include <unordered_set>
 
 void Chromosome::Init(const size_t eject_checkpoints_num, const double ratio_to_keep) {
   const auto iota_and_shuffle = [] (std::vector<size_t>& vec, const size_t size) {
@@ -16,7 +17,22 @@ void Chromosome::Init(const size_t eject_checkpoints_num, const double ratio_to_
   eject_checkpoints_permutation.resize(eject_checkpoints_permutation.size() * ratio_to_keep);
 }
 
-void Chromosome::Crossover(const Chromosome& /* other */) {
+void Chromosome::Crossover(const Chromosome& other) {
+  std::unordered_set<size_t> other_eject_checkpoints(
+      other.eject_checkpoints_permutation.begin(), other.eject_checkpoints_permutation.end());
+  for (const auto& checkpoint_pos : eject_checkpoints_permutation) {
+    other_eject_checkpoints.erase(checkpoint_pos);
+  }
+  if (other_eject_checkpoints.empty()) {
+    return;
+  }
+  const std::vector<size_t> eject_checkpoints_diff(
+      other_eject_checkpoints.begin(), other_eject_checkpoints.end());
+  for (auto& checkpoint_pos : eject_checkpoints_permutation) {
+    if (rand() / static_cast<double>(RAND_MAX) < 0.05) {
+      checkpoint_pos = eject_checkpoints_diff[rand() % eject_checkpoints_diff.size()];
+    }
+  }
 }
 
 void Chromosome::Mutate() {
@@ -74,6 +90,11 @@ void Generation::Evolve() {
 
   for (auto& chromosome : new_generation.chromosomes) {
     chromosome.Mutate();
+  }
+  for (auto& chromosome : new_generation.chromosomes) {
+    for (const auto& other_chromosome : new_generation.chromosomes) {
+        chromosome.Crossover(other_chromosome);
+    }
   }
 
   *this = std::move(new_generation);
