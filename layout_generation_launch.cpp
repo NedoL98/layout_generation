@@ -19,7 +19,7 @@ std::vector<Point> GenerateLayout(int argc, char** argv) {
     std::cerr << "please specify following params: " << std::endl;
     std::cerr << "    - path to data file" << std::endl;
     std::cerr << "    - number of assignments" << std::endl;
-    std::cerr << "    - deleted eject checkpoint ratio" << std::endl;
+    std::cerr << "    - kept eject checkpoint ratio" << std::endl;
     std::cerr << "    - number of epochs" << std::endl;
     exit(0);
   }
