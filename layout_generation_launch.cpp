@@ -14,6 +14,36 @@
 #include <set>
 #include <unordered_map>
 
+struct BestAssignment {
+  std::vector<std::vector<Point>> paths;
+  double throughput;
+  std::vector<size_t> eject_checkpoints_indices;
+  Graph graph;
+  Agents agents;
+};
+
+namespace {
+
+void LogBestAssignment(const std::optional<BestAssignment>& assignment_opt, const size_t epoch) {
+  const std::string filename = "best_assignment_epoch_" + std::to_string(epoch);
+  freopen(filename.c_str(), "w", stdout);
+  if (assignment_opt) {
+    const auto& assignment = assignment_opt.value();
+    for (size_t i = 0; i < assignment.paths.size(); ++i) {
+      const Agent& cur_agent = assignment.agents.At(i);
+      std::cout << "Path for agent " << cur_agent.id << " : ";
+      for (const auto& position : assignment.paths[i]) {
+        std::cout << position << " ";
+      }
+      std::cout << std::endl;
+      cur_agent.PrintDebugInfo(std::cout);
+    }
+  }
+  fclose(stdout);
+}
+
+}
+
 void GenerateLayout(int argc, char** argv) {
   if (argc != 5) {
     std::cerr << "please specify following params: " << std::endl;
@@ -37,16 +67,9 @@ void GenerateLayout(int argc, char** argv) {
   Generation generation(
       generation_size, graph_full.GetEjectCheckpoints().size(), kept_checkpoint_ratio);
 
-  struct Assignment {
-    std::vector<std::vector<Point>> paths;
-    double throughput;
-    std::vector<size_t> eject_checkpoints_indices;
-    Graph graph;
-    Agents agents;
-  };
   double total_throughput = 0.0;
   double min_throughput = std::numeric_limits<double>::max();
-  std::optional<Assignment> best_assignment;
+  std::optional<BestAssignment> best_assignment;
 
   const size_t steps = std::atoi(argv[4]);
   for (size_t i = 0; i < steps; ++i) {
@@ -67,7 +90,7 @@ void GenerateLayout(int argc, char** argv) {
       chromosome.SetScore(throughput);
       if (!best_assignment || best_assignment->throughput < throughput) {
         if (!best_assignment) {
-          best_assignment = Assignment();
+          best_assignment = BestAssignment();
         }
         best_assignment->paths = std::move(paths);
         best_assignment->throughput = throughput;
@@ -78,6 +101,10 @@ void GenerateLayout(int argc, char** argv) {
       min_throughput = std::min(min_throughput, throughput);
       total_throughput += throughput;
     }
+
+    if (i % 10 == 0) {
+      LogBestAssignment(best_assignment, i);
+    }
     generation.Evolve();
   }
 
@@ -85,15 +112,7 @@ void GenerateLayout(int argc, char** argv) {
     std::cerr << "No solution found" << std::endl;
     return;
   }
-  for (size_t i = 0; i < best_assignment->paths.size(); ++i) {
-    const Agent& cur_agent = best_assignment->agents.At(i);
-    std::cout << "Path for agent " << cur_agent.id << " : ";
-    for (const auto& position : best_assignment->paths[i]) {
-      std::cout << position << " ";
-    }
-    std::cout << std::endl;
-    cur_agent.PrintDebugInfo(std::cout);
-  }
+  LogBestAssignment(best_assignment, steps);
   std::cerr << "Worst throughput : " << min_throughput << std::endl;
   std::cerr << "Best throughput : " << best_assignment->throughput << std::endl;
   std::cerr << "Average throughput : "
