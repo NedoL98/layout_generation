@@ -27,7 +27,12 @@ public:
   void SetEjectCheckpointsAsObstacles(const std::vector<Assignment>& assignments);
   void KeepOnlySelectedCheckpoints(const std::vector<size_t>& eject_checkpoint_indices);
 
+  bool IsConnected() const;
+  bool AllEjectCheckpointsAreReachable() const;
+
 private:
+  void DFS(const Point& pos, std::set<Point>& used) const;
+
   int width;
   int height;
   std::set<Point> obstacles;

@@ -55,6 +55,13 @@ std::vector<Point> GenerateLayout(int argc, char** argv) {
       graph.KeepOnlySelectedCheckpoints(chromosome.eject_checkpoints_permutation);
       task_assigner = task_assigner_init;
       agents = agents_init;
+      // Explicitly check that
+      // - graph is connected
+      // - it's possible to reach all the eject checkpoints
+      if (!graph.IsConnected() || !graph.AllEjectCheckpointsAreReachable()) {
+        chromosome.SetScore(std::numeric_limits<double>::max());
+        continue;
+      }
       auto paths = PriorityBasedSearch(agents, graph, task_assigner, 30);
       const double throughput = CalculateThroughput(paths, assignments_cnt);
       chromosome.SetScore(throughput);
@@ -74,7 +81,10 @@ std::vector<Point> GenerateLayout(int argc, char** argv) {
     generation.Evolve();
   }
 
-  assert(best_assignment);
+  if (!best_assignment) {
+    std::cerr << "No solution found" << std::endl;
+    return {};
+  }
   for (size_t i = 0; i < best_assignment->paths.size(); ++i) {
     const Agent& cur_agent = best_assignment->agents.At(i);
     std::cout << "Path for agent " << cur_agent.id << " : ";

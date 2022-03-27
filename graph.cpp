@@ -4,6 +4,7 @@
 #include <cassert>
 #include <fstream>
 #include <iostream>
+#include <set>
 
 Graph::Graph(const YAML::Node& yaml_graph) {
   width = yaml_graph["dimensions"].as<std::pair<int, int>>().first;
@@ -150,5 +151,49 @@ void Graph::KeepOnlySelectedCheckpoints(const std::vector<size_t>& eject_checkpo
   obstacles.clear();
   for (const auto& eject_checkpoint : eject_checkpoints) {
     obstacles.insert(eject_checkpoint);
+  }
+}
+
+bool Graph::IsConnected() const {
+  bool dfs_was_run = false;
+  std::set<Point> used;
+  for (size_t i = 0; i < width; ++i) {
+    for (size_t j = 0; j < height; ++j) {
+      Point pos(i, j);
+      if (!obstacles.count(pos) && !used.count(pos)) {
+        if (!dfs_was_run) {
+          DFS(pos, used);
+          dfs_was_run = true;
+        } else {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+
+bool Graph::AllEjectCheckpointsAreReachable() const {
+  for (const auto& eject_checkpoint : eject_checkpoints) {
+    bool checkpoint_is_reachable = false;
+    for (const auto& neighbour : GetNeighbours(eject_checkpoint)) {
+      if (!obstacles.count(neighbour)) {
+        checkpoint_is_reachable = true;
+        break;
+      }
+    }
+    if (!checkpoint_is_reachable) {
+      return false;
+    }
+  }
+  return true;
+}
+
+void Graph::DFS(const Point& pos, std::set<Point>& used) const {
+  used.insert(pos);
+  for (const auto& neighbour : GetNeighbours(pos, false)) {
+    if (!used.count(neighbour)) {
+      DFS(neighbour, used);
+    }
   }
 }
