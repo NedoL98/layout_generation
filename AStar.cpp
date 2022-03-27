@@ -64,8 +64,8 @@ std::vector<Point> AStar(
   size_t start_ts = 0;
   while (states.empty()) {
     if (!vertex_conflicts.count(start_ts) || !vertex_conflicts.at(start_ts).count(agent.start)) {
-      states.insert({{agent.start}, 0, start_ts, std::nullopt});
-      used.insert({agent.start, 0, std::nullopt});
+      states.insert({{agent.start}, 0, start_ts, agent.waiting_duration_opt});
+      used.insert({agent.start, 0, agent.waiting_duration_opt});
     }
     ++start_ts;
   }

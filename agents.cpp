@@ -95,7 +95,9 @@ void Agents::UpdateTasksLists(
 }
 
 bool Agents::DeleteCompletedTasks(
-    const std::vector<std::vector<Point>>& path_prefixes, const size_t window_size) {
+    const std::vector<std::vector<Point>>& path_prefixes,
+    const size_t window_size,
+    const size_t time_to_wait_near_checkpoints) {
   std::cerr << "deleting completed tasks : " << std::endl;
   bool has_tasks = false;
   for (size_t i = 0; i < path_prefixes.size(); ++i) {
@@ -103,7 +105,14 @@ bool Agents::DeleteCompletedTasks(
       const auto& cur_point = path_prefixes[i][j];
       if (!agents[i].locations_to_visit.empty()
           && agents[i].locations_to_visit.front() == cur_point) {
+        agents[i].waiting_duration_opt = 0;
         agents[i].locations_to_visit.pop_front();
+      }
+      if (agents[i].waiting_duration_opt) {
+        ++agents[i].waiting_duration_opt.value();
+        if (agents[i].waiting_duration_opt == time_to_wait_near_checkpoints) {
+          agents[i].waiting_duration_opt = std::nullopt;
+        }
       }
       has_tasks |= !agents[i].locations_to_visit.empty();
       if (j + 1 == std::min(window_size, path_prefixes[i].size())) {

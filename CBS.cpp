@@ -102,7 +102,7 @@ std::vector<std::vector<Point>> ConflictBasedSearch(
       std::cerr << std::endl;
     }
     */
-    agents.DeleteCompletedTasks(paths_prefixes, window_size);
+    agents.DeleteCompletedTasks(paths_prefixes, window_size, graph.GetTimeToWaitNearCheckpoints());
     std::cerr << "remaining tasks : " << task_assigner.RemainingTasks() << std::endl;
     for (size_t i = 0; i < paths_prefixes.size(); ++i) {
       for (size_t j = 0; j < std::min(window_size, paths_prefixes[i].size()); ++j) {

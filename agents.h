@@ -14,6 +14,7 @@ struct Agent {
   std::vector<std::pair<Point, Point>> all_checkpoints;
   std::vector<std::pair<Point, Point>> all_locations_to_visit;
   size_t id;
+  std::optional<size_t> waiting_duration_opt;
 
   Agent(const Point& start_, const size_t id_)
     : start(start_)
@@ -36,7 +37,9 @@ public:
 
   void UpdateTasksLists(TaskAssigner& task_assigner, const size_t window_size, const Graph& graph);
   bool DeleteCompletedTasks(
-      const std::vector<std::vector<Point>>& path_prefixes, const size_t window_size);
+      const std::vector<std::vector<Point>>& path_prefixes,
+      const size_t window_size,
+      const size_t time_to_wait_near_checkpoints);
 
 private:
   std::vector<Agent> agents;
