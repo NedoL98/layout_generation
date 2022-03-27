@@ -14,7 +14,7 @@
 #include <set>
 #include <unordered_map>
 
-std::vector<Point> GenerateLayout(int argc, char** argv) {
+void GenerateLayout(int argc, char** argv) {
   if (argc != 5) {
     std::cerr << "please specify following params: " << std::endl;
     std::cerr << "    - path to data file" << std::endl;
@@ -83,7 +83,7 @@ std::vector<Point> GenerateLayout(int argc, char** argv) {
 
   if (!best_assignment) {
     std::cerr << "No solution found" << std::endl;
-    return {};
+    return;
   }
   for (size_t i = 0; i < best_assignment->paths.size(); ++i) {
     const Agent& cur_agent = best_assignment->agents.At(i);
@@ -99,7 +99,7 @@ std::vector<Point> GenerateLayout(int argc, char** argv) {
   std::cerr << "Average throughput : "
             << total_throughput / (steps * generation_size) << std::endl;
 
-  return {};
+  return;
 }
 
 int main(int argc, char** argv) {
