@@ -17,7 +17,7 @@
 struct BestAssignment {
   std::vector<std::vector<Point>> paths;
   double throughput;
-  std::vector<size_t> eject_checkpoints_indices;
+  std::vector<size_t> induct_checkpoints_indices;
   Graph graph;
   Agents agents;
 };
@@ -49,7 +49,7 @@ void GenerateLayout(int argc, char** argv) {
     std::cerr << "please specify following params: " << std::endl;
     std::cerr << "    - path to data file" << std::endl;
     std::cerr << "    - number of assignments" << std::endl;
-    std::cerr << "    - kept eject checkpoint ratio" << std::endl;
+    std::cerr << "    - kept eject induct ratio" << std::endl;
     std::cerr << "    - number of epochs" << std::endl;
     exit(0);
   }
@@ -57,15 +57,15 @@ void GenerateLayout(int argc, char** argv) {
   const size_t assignments_cnt = std::atoi(argv[2]);
   const double kept_checkpoint_ratio = std::stod(argv[3]);
   TaskAssigner task_assigner_init(
-      graph_full.GetInductCheckpoints().size(),
-      graph_full.GetEjectCheckpoints().size() * kept_checkpoint_ratio,
+      graph_full.GetInductCheckpoints().size() * kept_checkpoint_ratio,
+      graph_full.GetEjectCheckpoints().size(),
       assignments_cnt);
   TaskAssigner task_assigner = task_assigner_init;
   const Agents agents_init(graph_full, 10);
   Agents agents = agents_init;
   const size_t generation_size = 3;
   Generation generation(
-      generation_size, graph_full.GetEjectCheckpoints().size(), kept_checkpoint_ratio);
+      generation_size, graph_full.GetInductCheckpoints().size(), kept_checkpoint_ratio);
 
   double total_throughput = 0.0;
   double min_throughput = std::numeric_limits<double>::max();
@@ -75,13 +75,13 @@ void GenerateLayout(int argc, char** argv) {
   for (size_t i = 0; i < steps; ++i) {
     for (auto& chromosome : generation.GetChromosomesMutable()) {
       Graph graph = graph_full;
-      graph.KeepOnlySelectedCheckpoints(chromosome.eject_checkpoints_permutation);
+      graph.KeepOnlySelectedCheckpoints(chromosome.induct_checkpoints_permutation);
       task_assigner = task_assigner_init;
       agents = agents_init;
       // Explicitly check that
       // - graph is connected
       // - it's possible to reach all the eject checkpoints
-      if (!graph.IsConnected() || !graph.AllEjectCheckpointsAreReachable()) {
+      if (!graph.IsConnected() || !graph.AllInductCheckpointsAreReachable()) {
         chromosome.SetScore(std::numeric_limits<double>::max());
         continue;
       }
@@ -94,7 +94,7 @@ void GenerateLayout(int argc, char** argv) {
         }
         best_assignment->paths = std::move(paths);
         best_assignment->throughput = throughput;
-        best_assignment->eject_checkpoints_indices = chromosome.eject_checkpoints_permutation;
+        best_assignment->induct_checkpoints_indices = chromosome.induct_checkpoints_permutation;
         best_assignment->graph = graph;
         best_assignment->agents = agents;
       }

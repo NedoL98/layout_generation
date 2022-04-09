@@ -30,8 +30,8 @@ int main(int argc, char** argv) {
   Graph graph(argv[1], std::stod(argv[3]));
   const size_t assignments_cnt = std::atoi(argv[2]);
   TaskAssigner task_assigner(graph, assignments_cnt);
-  // Set chosen eject checkpoints as obstacles
-  graph.SetEjectCheckpointsAsObstacles(task_assigner.GetAllRemainingAssigments());
+  // Set chosen induct checkpoints as obstacles
+  graph.SetInductCheckpointsAsObstacles(task_assigner.GetAllRemainingAssigments());
   Agents agents(graph, 10);
   const auto paths = PriorityBasedSearch(agents, graph, task_assigner, 30);
   for (size_t i = 0; i < paths.size(); ++i) {

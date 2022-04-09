@@ -24,11 +24,12 @@ public:
       const std::vector<size_t>& eject_checkpoints_permutation,
       const std::vector<size_t>& induct_checkpoints_permutation);
 
+  void SetInductCheckpointsAsObstacles(const std::vector<Assignment>& assignments);
   void SetEjectCheckpointsAsObstacles(const std::vector<Assignment>& assignments);
   void KeepOnlySelectedCheckpoints(const std::vector<size_t>& eject_checkpoint_indices);
 
   bool IsConnected() const;
-  bool AllEjectCheckpointsAreReachable() const;
+  bool AllInductCheckpointsAreReachable() const;
 
 private:
   void DFS(const Point& pos, std::set<Point>& used) const;

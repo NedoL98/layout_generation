@@ -6,54 +6,54 @@
 #include <random>
 #include <unordered_set>
 
-void Chromosome::Init(const size_t eject_checkpoints_num, const double ratio_to_keep) {
+void Chromosome::Init(const size_t induct_checkpoints_num, const double ratio_to_keep) {
   const auto iota_and_shuffle = [] (std::vector<size_t>& vec, const size_t size) {
     vec.resize(size);
     std::iota(vec.begin(), vec.end(), 0);
     std::random_shuffle(vec.begin(), vec.end());
   };
 
-  iota_and_shuffle(eject_checkpoints_permutation, eject_checkpoints_num);
-  eject_checkpoints_permutation.resize(eject_checkpoints_permutation.size() * ratio_to_keep);
+  iota_and_shuffle(induct_checkpoints_permutation, induct_checkpoints_num);
+  induct_checkpoints_permutation.resize(induct_checkpoints_permutation.size() * ratio_to_keep);
 }
 
 void Chromosome::Crossover(const Chromosome& other) {
-  std::unordered_set<size_t> other_eject_checkpoints(
-      other.eject_checkpoints_permutation.begin(), other.eject_checkpoints_permutation.end());
-  for (const auto& checkpoint_pos : eject_checkpoints_permutation) {
-    other_eject_checkpoints.erase(checkpoint_pos);
+  std::unordered_set<size_t> other_induct_checkpoints(
+      other.induct_checkpoints_permutation.begin(), other.induct_checkpoints_permutation.end());
+  for (const auto& checkpoint_pos : induct_checkpoints_permutation) {
+    other_induct_checkpoints.erase(checkpoint_pos);
   }
-  if (other_eject_checkpoints.empty()) {
+  if (other_induct_checkpoints.empty()) {
     return;
   }
-  const std::vector<size_t> eject_checkpoints_diff(
-      other_eject_checkpoints.begin(), other_eject_checkpoints.end());
-  for (auto& checkpoint_pos : eject_checkpoints_permutation) {
+  const std::vector<size_t> induct_checkpoints_diff(
+      other_induct_checkpoints.begin(), other_induct_checkpoints.end());
+  for (auto& checkpoint_pos : induct_checkpoints_permutation) {
     if (rand() / static_cast<double>(RAND_MAX) < 0.05) {
-      checkpoint_pos = eject_checkpoints_diff[rand() % eject_checkpoints_diff.size()];
+      checkpoint_pos = induct_checkpoints_diff[rand() % induct_checkpoints_diff.size()];
     }
   }
 }
 
 void Chromosome::Mutate() {
-  for (auto& checkpoint_pos : eject_checkpoints_permutation) {
+  for (auto& checkpoint_pos : induct_checkpoints_permutation) {
     if (rand() / static_cast<double>(RAND_MAX) < 0.05) {
       std::swap(
           checkpoint_pos,
-          eject_checkpoints_permutation[rand() % eject_checkpoints_permutation.size()]);
+          induct_checkpoints_permutation[rand() % induct_checkpoints_permutation.size()]);
     }
   }
 }
 
 Generation::Generation(
       const size_t generation_size,
-      const size_t eject_checkpoints,
+      const size_t induct_checkpoints,
       const double kept_checkpoint_ratio,
       const size_t seed) {
   srand(seed);
   chromosomes.resize(generation_size);
   for (Chromosome& chromosome : chromosomes) {
-    chromosome.Init(eject_checkpoints, kept_checkpoint_ratio);
+    chromosome.Init(induct_checkpoints, kept_checkpoint_ratio);
   }
 }
 

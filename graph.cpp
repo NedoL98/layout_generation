@@ -34,9 +34,9 @@ Graph::Graph(const char* filename, const double deleted_eject_checkpoints_ratio)
     if (tokens[1] == "Obstacle") {
       obstacles.insert(current_point);
     } else if (tokens[1] == "Eject") {
-      obstacles.insert(current_point);
       eject_checkpoints.push_back(current_point);
     } else if (tokens[1] == "Induct") {
+      obstacles.insert(current_point);
       induct_checkpoints.push_back(current_point);
     } else if (tokens[1] == "Travel") {
       // pass
@@ -135,22 +135,28 @@ void Graph::ApplyPermutation(
   sort_and_apply_permutation(eject_checkpoints, eject_checkpoints_permutation);
 }
 
+void Graph::SetInductCheckpointsAsObstacles(const std::vector<Assignment>& assignments) {
+  for (const auto& assignment : assignments) {
+    obstacles.insert(induct_checkpoints[assignment.finish_checkpoint_idx]);
+  }
+}
+
 void Graph::SetEjectCheckpointsAsObstacles(const std::vector<Assignment>& assignments) {
   for (const auto& assignment : assignments) {
     obstacles.insert(eject_checkpoints[assignment.finish_checkpoint_idx]);
   }
 }
 
-void Graph::KeepOnlySelectedCheckpoints(const std::vector<size_t>& eject_checkpoint_indices) {
-  auto eject_checkpoints_tmp = std::move(eject_checkpoints);
-  eject_checkpoints.clear();
-  eject_checkpoints.reserve(eject_checkpoint_indices.size());
-  for (const auto idx : eject_checkpoint_indices) {
-    eject_checkpoints.push_back(eject_checkpoints_tmp[idx]);
+void Graph::KeepOnlySelectedCheckpoints(const std::vector<size_t>& induct_checkpoint_indices) {
+  auto induct_checkpoints_tmp = std::move(induct_checkpoints);
+  induct_checkpoints.clear();
+  induct_checkpoints.reserve(induct_checkpoint_indices.size());
+  for (const auto idx : induct_checkpoint_indices) {
+    induct_checkpoints.push_back(induct_checkpoints_tmp[idx]);
   }
   obstacles.clear();
-  for (const auto& eject_checkpoint : eject_checkpoints) {
-    obstacles.insert(eject_checkpoint);
+  for (const auto& induct_checkpoint : induct_checkpoints) {
+    obstacles.insert(induct_checkpoint);
   }
 }
 
@@ -173,10 +179,10 @@ bool Graph::IsConnected() const {
   return true;
 }
 
-bool Graph::AllEjectCheckpointsAreReachable() const {
-  for (const auto& eject_checkpoint : eject_checkpoints) {
+bool Graph::AllInductCheckpointsAreReachable() const {
+  for (const auto& induct_checkpoint : induct_checkpoints) {
     bool checkpoint_is_reachable = false;
-    for (const auto& neighbour : GetNeighbours(eject_checkpoint)) {
+    for (const auto& neighbour : GetNeighbours(induct_checkpoint)) {
       if (!obstacles.count(neighbour)) {
         checkpoint_is_reachable = true;
         break;

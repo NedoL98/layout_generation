@@ -74,13 +74,13 @@ void Agents::UpdateTasksLists(
             graph.GetInductCheckpoints()[next_task_opt->start_checkpoint_idx];
         const Point& finish_checkpoint_position =
             graph.GetEjectCheckpoints()[next_task_opt->finish_checkpoint_idx];
-        const std::optional<Point> finish_position_opt =
-            graph.GetAnyNearSpareLocation(finish_checkpoint_position);
-        assert(finish_position_opt && "No spare location near finish point can be found");
-        agent.locations_to_visit.push_back(start_checkpoint_position);
-        agent.locations_to_visit.push_back(finish_position_opt.value());
+        const std::optional<Point> start_position_opt =
+            graph.GetAnyNearSpareLocation(start_checkpoint_position);
+        assert(start_position_opt && "No spare location near start point can be found");
+        agent.locations_to_visit.push_back(start_position_opt.value());
+        agent.locations_to_visit.push_back(finish_checkpoint_position);
         agent.all_locations_to_visit.push_back(
-            {start_checkpoint_position, finish_position_opt.value()});
+            {start_position_opt.value(), finish_checkpoint_position});
         agent.all_checkpoints.push_back({start_checkpoint_position, finish_checkpoint_position});
       } else {
         break;
