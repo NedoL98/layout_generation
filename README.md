@@ -5,6 +5,6 @@ Requirements:
 Layout generation launch example with visualization:
 
 ```
-build/layout_generation data/inputs/sorting_grid_small_full 100 0.2 3 > data/sample_output
-python3 scripts/visualize_path.py data/inputs/sorting_grid_small_full data/sample_output
+build/layout_generation data/inputs/sorting_grid_small_full 100 0.2 3
+python3 scripts/visualize_path.py data/inputs/sorting_grid_small_full data/best_assignment_epoch_3
 ```

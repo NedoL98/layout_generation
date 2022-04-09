@@ -25,7 +25,7 @@ struct BestAssignment {
 namespace {
 
 void LogBestAssignment(const std::optional<BestAssignment>& assignment_opt, const size_t epoch) {
-  const std::string filename = "best_assignment_epoch_" + std::to_string(epoch);
+  const std::string filename = "data/best_assignment_epoch_" + std::to_string(epoch);
   freopen(filename.c_str(), "w", stdout);
   if (assignment_opt) {
     const auto& assignment = assignment_opt.value();
