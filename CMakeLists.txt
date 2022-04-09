@@ -6,6 +6,9 @@ pkg_check_modules(YamlCpp yaml-cpp)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_COMPILER "/usr/bin/g++-7")
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package(Threads REQUIRED)
 # Pset_target_properties(cbs_basic PROPERTIES LINKER_LANGUAGE CXX)
 
 set(PBS_SOURCE_LIST
@@ -26,6 +29,7 @@ add_executable(
 )
 target_link_libraries(
     PBS
+    Threads::Threads
     yaml-cpp
 )
 
@@ -41,5 +45,6 @@ add_executable(
 )
 target_link_libraries(
     layout_generation
+    Threads::Threads
     yaml-cpp
 )
