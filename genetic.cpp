@@ -4,6 +4,7 @@
 #include <cassert>
 #include <iostream>
 #include <random>
+#include <set>
 #include <unordered_set>
 
 void Chromosome::Init(const size_t induct_checkpoints_num, const double ratio_to_keep) {
@@ -15,6 +16,7 @@ void Chromosome::Init(const size_t induct_checkpoints_num, const double ratio_to
 
   iota_and_shuffle(induct_checkpoints_permutation, induct_checkpoints_num);
   induct_checkpoints_permutation.resize(induct_checkpoints_permutation.size() * ratio_to_keep);
+  max_checkpoint_idx = induct_checkpoints_num;
 }
 
 void Chromosome::Crossover(const Chromosome& other) {
@@ -26,23 +28,54 @@ void Chromosome::Crossover(const Chromosome& other) {
   if (other_induct_checkpoints.empty()) {
     return;
   }
-  const std::vector<size_t> induct_checkpoints_diff(
+  std::vector<size_t> induct_checkpoints_diff(
       other_induct_checkpoints.begin(), other_induct_checkpoints.end());
   for (auto& checkpoint_pos : induct_checkpoints_permutation) {
+    if (induct_checkpoints_diff.empty()) {
+      break;
+    }
     if (rand() / static_cast<double>(RAND_MAX) < 0.05) {
       checkpoint_pos = induct_checkpoints_diff[rand() % induct_checkpoints_diff.size()];
+      induct_checkpoints_diff.erase(std::find(
+          induct_checkpoints_diff.begin(), induct_checkpoints_diff.end(), checkpoint_pos));
     }
   }
+
+  assert(induct_checkpoints_permutation.size() == std::set<size_t>(
+      induct_checkpoints_permutation.begin(), induct_checkpoints_permutation.end()).size()
+      && "Element after crossover are not unique");
 }
 
 void Chromosome::Mutate() {
+  std::unordered_set<size_t> unused_induct_checkpoints;
+  for (size_t i = 0; i < max_checkpoint_idx; ++i) {
+    unused_induct_checkpoints.insert(i);
+  }
+  for (auto checkpoint : induct_checkpoints_permutation) {
+    unused_induct_checkpoints.erase(checkpoint);
+  }
+
   for (auto& checkpoint_pos : induct_checkpoints_permutation) {
+    if (unused_induct_checkpoints.empty()) {
+      break;
+    }
     if (rand() / static_cast<double>(RAND_MAX) < 0.05) {
-      std::swap(
-          checkpoint_pos,
-          induct_checkpoints_permutation[rand() % induct_checkpoints_permutation.size()]);
+      size_t rand_idx = rand() % unused_induct_checkpoints.size();
+      auto rand_it = unused_induct_checkpoints.begin();
+      while (rand_idx > 0) {
+        ++rand_it;
+        --rand_idx;
+      }
+      const size_t rand_checkpoint = *rand_it;
+      unused_induct_checkpoints.erase(rand_it);
+      unused_induct_checkpoints.insert(checkpoint_pos);
+      checkpoint_pos = rand_checkpoint;
     }
   }
+
+  assert(induct_checkpoints_permutation.size() == std::set<size_t>(
+      induct_checkpoints_permutation.begin(), induct_checkpoints_permutation.end()).size()
+      && "Element after mutate are not unique");
 }
 
 Generation::Generation(

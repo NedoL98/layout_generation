@@ -14,6 +14,7 @@ struct Chromosome {
 
   std::vector<size_t> induct_checkpoints_permutation;
   std::optional<double> score_opt;
+  size_t max_checkpoint_idx;
 };
 
 class Generation {
