@@ -4,3 +4,5 @@ CMakeCache.txt
 .vscode
 Makefile
 cmake_install.cmake
+log.cerr
+best_assignment*
