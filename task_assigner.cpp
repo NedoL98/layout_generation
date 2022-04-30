@@ -11,11 +11,8 @@ TaskAssigner::TaskAssigner(
   srand(seed);
   assert(induct_checkpoints_size > 0 && "Need at least one induct checkpoint!");
   assert(eject_checkpoints_size > 0 && "Need at least one eject checkpoint!");
-  if (assignments_cnt < std::max(induct_checkpoints_size, eject_checkpoints_size)) {
-    std::cerr
-        << "Consider increasing number of assignments, not all checkpoints are visited"
-        << std::endl;
-  }
+  assert(assignments_cnt >= std::max(induct_checkpoints_size, eject_checkpoints_size)
+      && "Consider increasing number of assignments, not all checkpoints are visited");
   std::cerr << "Generating initial " << assignments_cnt << " checkpoints: ";
   const auto fill_and_shuffle = [] (size_t size) {
     std::vector<size_t> permutation(size);

@@ -103,7 +103,7 @@ void GenerateLayout(int argc, char** argv) {
     // - graph is connected
     // - it's possible to reach all the eject checkpoints
     if (!graph.IsConnected() || !graph.AllInductCheckpointsAreReachable()) {
-      chromosome.SetScore(std::numeric_limits<double>::max());
+      chromosome.Invalidate();
       return;
     }
     double throughput_avg = 0;

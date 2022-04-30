@@ -102,7 +102,8 @@ std::optional<Point> Graph::GetAnyNearSpareLocation(const Point& pos) const {
   if (neighbours.empty()) {
     return std::nullopt;
   } else {
-    return neighbours[rand() % neighbours.size()];
+    // This is done for the sake of reproducibility
+    return neighbours.front();
   }
 }
 

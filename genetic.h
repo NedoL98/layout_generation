@@ -4,17 +4,24 @@
 #include <vector>
 
 struct Chromosome {
-  void Init(const size_t induct_checkpoints_num, const double ratio_to_keep);
+  void Init(const size_t induct_checkpoints_num, const double ratio_to_keep, const size_t idx);
 
   void Crossover(const Chromosome& other);
   void Mutate();
   void SetScore(const double score) {
     score_opt = score;
   }
+  void Invalidate() {
+    score_opt = std::nullopt;
+  }
+  bool IsInvalid() const {
+    return !score_opt.has_value();
+  }
 
   std::vector<size_t> induct_checkpoints_permutation;
   std::optional<double> score_opt;
   size_t max_checkpoint_idx;
+  size_t idx;
 };
 
 class Generation {

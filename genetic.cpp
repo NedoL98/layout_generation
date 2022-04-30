@@ -7,7 +7,10 @@
 #include <set>
 #include <unordered_set>
 
-void Chromosome::Init(const size_t induct_checkpoints_num, const double ratio_to_keep) {
+void Chromosome::Init(
+    const size_t induct_checkpoints_num,
+    const double ratio_to_keep,
+    const size_t idx) {
   const auto iota_and_shuffle = [] (std::vector<size_t>& vec, const size_t size) {
     vec.resize(size);
     std::iota(vec.begin(), vec.end(), 0);
@@ -17,6 +20,7 @@ void Chromosome::Init(const size_t induct_checkpoints_num, const double ratio_to
   iota_and_shuffle(induct_checkpoints_permutation, induct_checkpoints_num);
   induct_checkpoints_permutation.resize(induct_checkpoints_permutation.size() * ratio_to_keep);
   max_checkpoint_idx = induct_checkpoints_num;
+  this->idx = idx;
 }
 
 void Chromosome::Crossover(const Chromosome& other) {
@@ -34,7 +38,7 @@ void Chromosome::Crossover(const Chromosome& other) {
     if (induct_checkpoints_diff.empty()) {
       break;
     }
-    if (rand() / static_cast<double>(RAND_MAX) < 0.05) {
+    if (rand() / static_cast<double>(RAND_MAX) < 0.3) {
       checkpoint_pos = induct_checkpoints_diff[rand() % induct_checkpoints_diff.size()];
       induct_checkpoints_diff.erase(std::find(
           induct_checkpoints_diff.begin(), induct_checkpoints_diff.end(), checkpoint_pos));
@@ -59,13 +63,10 @@ void Chromosome::Mutate() {
     if (unused_induct_checkpoints.empty()) {
       break;
     }
-    if (rand() / static_cast<double>(RAND_MAX) < 0.05) {
+    if (rand() / static_cast<double>(RAND_MAX) < 0.3) {
       size_t rand_idx = rand() % unused_induct_checkpoints.size();
       auto rand_it = unused_induct_checkpoints.begin();
-      while (rand_idx > 0) {
-        ++rand_it;
-        --rand_idx;
-      }
+      std::advance(rand_it, rand_idx);
       const size_t rand_checkpoint = *rand_it;
       unused_induct_checkpoints.erase(rand_it);
       unused_induct_checkpoints.insert(checkpoint_pos);
@@ -85,28 +86,20 @@ Generation::Generation(
       const size_t seed) {
   srand(seed);
   chromosomes.resize(generation_size);
-  for (Chromosome& chromosome : chromosomes) {
-    chromosome.Init(induct_checkpoints, kept_checkpoint_ratio);
+  for (size_t i = 0; i < generation_size; ++i) {
+    chromosomes[i].Init(induct_checkpoints, kept_checkpoint_ratio, i);
   }
 }
 
 void Generation::Evolve() {
-  Generation new_generation;
-  double total_score = std::accumulate(
+  const size_t generation_size = chromosomes.size();
+  // Delete all invalid chromosomes
+  auto it = std::remove_if(
       chromosomes.begin(),
       chromosomes.end(),
-      0.0,
-      [](const double accumulated, const Chromosome chromosome) {
-    assert(chromosome.score_opt);
-    return accumulated + chromosome.score_opt.value();
-  });
-
-  const auto best_chromosome_it = std::max_element(
-      chromosomes.begin(),
-      chromosomes.end(),
-      [](const Chromosome& lhs, const Chromosome& rhs) {
-    return lhs.score_opt.value() < rhs.score_opt.value();
-  });
+      [](const auto& chromosome) { return chromosome.IsInvalid(); });
+  chromosomes.erase(it, chromosomes.end());
+  assert(!chromosomes.empty() && "all chromosomes are invalid!");
 
   std::vector<double> scores;
   scores.reserve(chromosomes.size());
@@ -116,8 +109,8 @@ void Generation::Evolve() {
 
   std::default_random_engine generator;
   std::discrete_distribution<int> distribution(scores.begin(), scores.end());
-  new_generation.chromosomes.push_back(*best_chromosome_it);
-  while (new_generation.chromosomes.size() < chromosomes.size()) {
+  Generation new_generation;
+  while (new_generation.chromosomes.size() + 1 < generation_size) {
     new_generation.chromosomes.push_back(chromosomes[distribution(generator)]);
   }
 
@@ -130,5 +123,16 @@ void Generation::Evolve() {
     }
   }
 
+  // This guarantees that the best chromosome stays in generation
+  const auto best_chromosome_it = std::max_element(
+      chromosomes.begin(),
+      chromosomes.end(),
+      [](const Chromosome& lhs, const Chromosome& rhs) {
+    return lhs.score_opt.value() < rhs.score_opt.value();
+  });
+  new_generation.chromosomes.push_back(*best_chromosome_it);
   *this = std::move(new_generation);
+  for (size_t i = 0; i < chromosomes.size(); ++i) {
+    chromosomes[i].idx = i;
+  }
 }
