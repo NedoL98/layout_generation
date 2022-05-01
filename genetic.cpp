@@ -92,25 +92,16 @@ Generation::Generation(
 }
 
 void Generation::Evolve() {
-  const size_t generation_size = chromosomes.size();
-  // Delete all invalid chromosomes
-  auto it = std::remove_if(
-      chromosomes.begin(),
-      chromosomes.end(),
-      [](const auto& chromosome) { return chromosome.IsInvalid(); });
-  chromosomes.erase(it, chromosomes.end());
-  assert(!chromosomes.empty() && "all chromosomes are invalid!");
-
   std::vector<double> scores;
   scores.reserve(chromosomes.size());
   for (const auto& chromosome : chromosomes) {
-    scores.push_back(chromosome.score_opt.value());
+    scores.push_back(chromosome.IsInvalid() ? 0.0 : chromosome.score_opt.value());
   }
 
   std::default_random_engine generator;
   std::discrete_distribution<int> distribution(scores.begin(), scores.end());
   Generation new_generation;
-  while (new_generation.chromosomes.size() + 1 < generation_size) {
+  while (new_generation.chromosomes.size() + 1 < chromosomes.size()) {
     new_generation.chromosomes.push_back(chromosomes[distribution(generator)]);
   }
 
@@ -128,7 +119,7 @@ void Generation::Evolve() {
       chromosomes.begin(),
       chromosomes.end(),
       [](const Chromosome& lhs, const Chromosome& rhs) {
-    return lhs.score_opt.value() < rhs.score_opt.value();
+    return lhs.score_opt < rhs.score_opt;
   });
   new_generation.chromosomes.push_back(*best_chromosome_it);
   *this = std::move(new_generation);
