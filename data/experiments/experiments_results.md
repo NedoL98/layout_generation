@@ -1,4 +1,4 @@
-50 epoch, generation size 3, 10000 tasks
+50 epoch, generation size 3, 10000 tasks, 10 agents
 
 |Dataset + Density|Baseline score|Genetic (0.05 learning rate)|Genetic (0.3 learning rate)|
 |:-----:|:---------:|:---------:|:---------:|

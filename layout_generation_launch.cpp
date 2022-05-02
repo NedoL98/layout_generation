@@ -65,13 +65,14 @@ struct TaskAssigners {
 }
 
 void GenerateLayout(int argc, char** argv) {
-  if (argc != 6) {
+  if (argc != 7) {
     std::cerr << "please specify following params: " << std::endl;
     std::cerr << "    - path to data file" << std::endl;
     std::cerr << "    - number of assignments" << std::endl;
     std::cerr << "    - kept eject induct ratio" << std::endl;
     std::cerr << "    - number of epochs" << std::endl;
     std::cerr << "    - number of assigners" << std::endl;
+    std::cerr << "    - number of agents" << std::endl;
     exit(0);
   }
   // Mute all cerr
@@ -84,7 +85,7 @@ void GenerateLayout(int argc, char** argv) {
       graph_full.GetInductCheckpoints().size() * kept_checkpoint_ratio,
       graph_full.GetEjectCheckpoints().size(),
       assignments_cnt);
-  const Agents agents_init(graph_full, 10);
+  const Agents agents_init(graph_full, std::stoi(argv[6]));
   const size_t generation_size = 3;
   Generation generation(
       generation_size, graph_full.GetInductCheckpoints().size(), kept_checkpoint_ratio);
@@ -96,7 +97,7 @@ void GenerateLayout(int argc, char** argv) {
   std::mutex mtx;
   const auto& run_pbs = [&](Chromosome& chromosome) {
     Graph graph = graph_full;
-    graph.KeepOnlySelectedCheckpoints(chromosome.induct_checkpoints_permutation);
+    graph.KeepOnlySelectedCheckpoints(chromosome.GetCheckpointsPermutation());
     TaskAssigners task_assigners = task_assigners_init;
     Agents agents = agents_init;
     // Explicitly check that
@@ -128,7 +129,7 @@ void GenerateLayout(int argc, char** argv) {
         }
         best_assignment->paths = std::move(first_assigner_paths);
         best_assignment->throughput = throughput_avg;
-        best_assignment->induct_checkpoints_indices = chromosome.induct_checkpoints_permutation;
+        best_assignment->induct_checkpoints_indices = chromosome.GetCheckpointsPermutation();
         best_assignment->graph = graph;
         best_assignment->agents = agents;
       }
