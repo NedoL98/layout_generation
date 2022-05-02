@@ -1,11 +1,21 @@
 #pragma once
 
+#include <cassert>
 #include <iostream>
 #include <memory>
 #include <numeric>
 #include <optional>
 #include <vector>
 #include <utility>
+
+#define ASSERT(condition) \
+  if (!(condition)) { \
+    std::cout << "assertion failed: " \
+        << #condition << " @ " \
+        << __FILE__ << " (" \
+        << __LINE__ << ")" << std::endl; \
+    assert(condition); \
+  }
 
 struct Point {
   Point() = default;

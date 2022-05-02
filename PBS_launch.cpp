@@ -6,7 +6,6 @@
 
 #include "yaml-cpp/yaml.h"
 
-#include <cassert>
 #include <iostream>
 #include <optional>
 #include <set>
@@ -22,9 +21,9 @@ int main(int argc, char** argv) {
   }
   /*
   YAML::Node yaml_config = YAML::LoadFile(argv[1]);
-  assert(yaml_config["map"] && "No map found in config file");
+  ASSERT(yaml_config["map"] && "No map found in config file");
   Graph graph(yaml_config["map"]);
-  assert(yaml_config["agents"] && "No agents found in config file");
+  ASSERT(yaml_config["agents"] && "No agents found in config file");
   Agents agents(yaml_config["agents"]);
   */
   Graph graph(argv[1], std::stod(argv[3]));

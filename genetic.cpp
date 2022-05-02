@@ -1,7 +1,8 @@
 #include "genetic.h"
 
+#include "common.h"
+
 #include <algorithm>
-#include <cassert>
 #include <iostream>
 #include <random>
 #include <set>
@@ -23,7 +24,7 @@ void Chromosome::Init(
   this->idx = idx;
 }
 
-void Chromosome::Crossover(const Chromosome& other) {
+void Chromosome::Crossover(const Chromosome& other, const double enthropy) {
   std::unordered_set<size_t> other_induct_checkpoints(
       other.induct_checkpoints_permutation.begin(), other.induct_checkpoints_permutation.end());
   for (const auto& checkpoint_pos : induct_checkpoints_permutation) {
@@ -38,19 +39,24 @@ void Chromosome::Crossover(const Chromosome& other) {
     if (induct_checkpoints_diff.empty()) {
       break;
     }
-    if (rand() / static_cast<double>(RAND_MAX) < 0.3) {
+    if (rand() / static_cast<double>(RAND_MAX) < enthropy) {
       checkpoint_pos = induct_checkpoints_diff[rand() % induct_checkpoints_diff.size()];
       induct_checkpoints_diff.erase(std::find(
           induct_checkpoints_diff.begin(), induct_checkpoints_diff.end(), checkpoint_pos));
     }
   }
 
-  assert(induct_checkpoints_permutation.size() == std::set<size_t>(
+  ASSERT(induct_checkpoints_permutation.size() == std::set<size_t>(
       induct_checkpoints_permutation.begin(), induct_checkpoints_permutation.end()).size()
       && "Element after crossover are not unique");
 }
 
-void Chromosome::Mutate() {
+void Chromosome::Mutate(const double enthropy) {
+  MutationSwap(enthropy);
+  MutationShift(enthropy);
+}
+
+void Chromosome::MutationSwap(const double enthropy) {
   std::unordered_set<size_t> unused_induct_checkpoints;
   for (size_t i = 0; i < max_checkpoint_idx; ++i) {
     unused_induct_checkpoints.insert(i);
@@ -63,7 +69,7 @@ void Chromosome::Mutate() {
     if (unused_induct_checkpoints.empty()) {
       break;
     }
-    if (rand() / static_cast<double>(RAND_MAX) < 0.3) {
+    if (rand() / static_cast<double>(RAND_MAX) < enthropy) {
       size_t rand_idx = rand() % unused_induct_checkpoints.size();
       auto rand_it = unused_induct_checkpoints.begin();
       std::advance(rand_it, rand_idx);
@@ -74,9 +80,18 @@ void Chromosome::Mutate() {
     }
   }
 
-  assert(induct_checkpoints_permutation.size() == std::set<size_t>(
+  ASSERT(induct_checkpoints_permutation.size() == std::set<size_t>(
       induct_checkpoints_permutation.begin(), induct_checkpoints_permutation.end()).size()
       && "Element after mutate are not unique");
+}
+
+void Chromosome::MutationShift(const double enthropy) {
+  if (rand() / static_cast<double>(RAND_MAX) < enthropy) {
+    const size_t shift = rand() % max_checkpoint_idx;
+    for (auto& checkpoint : induct_checkpoints_permutation) {
+      checkpoint = (checkpoint + shift) % max_checkpoint_idx;
+    }
+  }
 }
 
 Generation::Generation(
@@ -97,6 +112,10 @@ void Generation::Evolve() {
   for (const auto& chromosome : chromosomes) {
     scores.push_back(chromosome.IsInvalid() ? 0.0 : chromosome.score_opt.value());
   }
+  // for (const auto& chromosome : chromosomes) {
+  //   std::cout << (chromosome.IsInvalid() ? 0.0 : chromosome.score_opt.value()) << " ";
+  // }
+  // std::cout << std::endl;
 
   std::default_random_engine generator;
   std::discrete_distribution<int> distribution(scores.begin(), scores.end());
@@ -122,6 +141,10 @@ void Generation::Evolve() {
     return lhs.score_opt < rhs.score_opt;
   });
   new_generation.chromosomes.push_back(*best_chromosome_it);
+  // for (const auto& c : new_generation.chromosomes.back().induct_checkpoints_permutation) {
+  //   std::cout << c << " ";
+  // }
+  // std::cout << std::endl;
   *this = std::move(new_generation);
   for (size_t i = 0; i < chromosomes.size(); ++i) {
     chromosomes[i].idx = i;

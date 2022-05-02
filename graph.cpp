@@ -1,7 +1,6 @@
 #include "graph.h"
 
 #include <algorithm>
-#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <set>
@@ -29,7 +28,7 @@ Graph::Graph(const char* filename, const double deleted_eject_checkpoints_ratio)
       start = end + 1;
       end = line.find(',', start);
     }
-    assert(tokens.size() == 9 && "tokens number is incorrect");
+    ASSERT(tokens.size() == 9 && "tokens number is incorrect");
     Point current_point(std::stoi(tokens[3]), std::stoi(tokens[4]));
     if (tokens[1] == "Obstacle") {
       obstacles.insert(current_point);
@@ -122,7 +121,7 @@ void Graph::ApplyPermutation(
     const std::vector<size_t>& induct_checkpoints_permutation) {
   const auto sort_and_apply_permutation = [] (
       std::vector<Point>& vec, const std::vector<size_t>& permutation) {
-    assert(vec.size() == permutation.size());
+    ASSERT(vec.size() == permutation.size());
     std::sort(vec.begin(), vec.end());
     // todo : make this more efficient
     std::vector<Point> new_vec(vec.size());

@@ -3,11 +3,14 @@
 #include <optional>
 #include <vector>
 
-struct Chromosome {
+class Chromosome {
+  friend class Generation;
+
+ public:
   void Init(const size_t induct_checkpoints_num, const double ratio_to_keep, const size_t idx);
 
-  void Crossover(const Chromosome& other);
-  void Mutate();
+  void Crossover(const Chromosome& other, const double enthropy = 0.3);
+  void Mutate(const double enthropy = 0.3);
   void SetScore(const double score) {
     score_opt = score;
   }
@@ -17,6 +20,14 @@ struct Chromosome {
   bool IsInvalid() const {
     return !score_opt.has_value();
   }
+
+  std::vector<size_t> GetCheckpointsPermutation() const {
+    return induct_checkpoints_permutation;
+  }
+
+ private:
+  void MutationSwap(const double enthropy = 0.3);
+  void MutationShift(const double enthropy = 0.3);
 
   std::vector<size_t> induct_checkpoints_permutation;
   std::optional<double> score_opt;
@@ -38,11 +49,6 @@ public:
   }
   std::vector<Chromosome>& GetChromosomesMutable() {
     return chromosomes;
-  }
-
-  Chromosome GetBestChromosome() const {
-    // by construction
-    return chromosomes.front();
   }
 
   void Evolve();

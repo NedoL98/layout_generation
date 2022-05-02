@@ -1,6 +1,5 @@
 #include "agents.h"
 
-#include <cassert>
 
 void Agent::PrintDebugInfo(std::ostream& ostream) const {
   ostream << "All assignments for agent " << id << ": ";
@@ -39,7 +38,7 @@ Agents::Agents(const YAML::Node& yaml_agents) {
 Agents::Agents(const Graph& graph, const size_t agents_num, const size_t seed) {
   agents.reserve(agents_num);
   auto spare_locations = graph.GetSpareLocations();
-  assert(spare_locations.size() >= agents_num && "can't place all the agents!");
+  ASSERT(spare_locations.size() >= agents_num && "can't place all the agents!");
   size_t agent_id = 0;
   for (size_t i = 0; i < agents_num; ++i) {
     size_t rand_idx = rand() % spare_locations.size();
@@ -76,7 +75,7 @@ void Agents::UpdateTasksLists(
             graph.GetEjectCheckpoints()[next_task_opt->finish_checkpoint_idx];
         const std::optional<Point> start_position_opt =
             graph.GetAnyNearSpareLocation(start_checkpoint_position);
-        assert(start_position_opt && "No spare location near start point can be found");
+        ASSERT(start_position_opt && "No spare location near start point can be found");
         agent.locations_to_visit.push_back(start_position_opt.value());
         agent.locations_to_visit.push_back(finish_checkpoint_position);
         agent.all_locations_to_visit.push_back(

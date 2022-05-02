@@ -3,7 +3,6 @@
 #include "agents.h"
 #include "graph.h"
 
-#include <cassert>
 #include <vector>
 #include <unordered_map>
 

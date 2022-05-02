@@ -1,7 +1,6 @@
 #include "task_assigner.h"
 
 #include <algorithm>
-#include <cassert>
 
 TaskAssigner::TaskAssigner(
     const size_t induct_checkpoints_size,
@@ -9,9 +8,9 @@ TaskAssigner::TaskAssigner(
     const size_t assignments_cnt,
     const size_t seed) {
   srand(seed);
-  assert(induct_checkpoints_size > 0 && "Need at least one induct checkpoint!");
-  assert(eject_checkpoints_size > 0 && "Need at least one eject checkpoint!");
-  assert(assignments_cnt >= std::max(induct_checkpoints_size, eject_checkpoints_size)
+  ASSERT(induct_checkpoints_size > 0 && "Need at least one induct checkpoint!");
+  ASSERT(eject_checkpoints_size > 0 && "Need at least one eject checkpoint!");
+  ASSERT(assignments_cnt >= std::max(induct_checkpoints_size, eject_checkpoints_size)
       && "Consider increasing number of assignments, not all checkpoints are visited");
   std::cerr << "Generating initial " << assignments_cnt << " checkpoints: ";
   const auto fill_and_shuffle = [] (size_t size) {

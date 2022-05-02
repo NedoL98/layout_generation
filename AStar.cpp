@@ -9,7 +9,7 @@ struct AStarState {
   std::optional<size_t> waiting_duration_opt;
 
   size_t LowerBoundToGoal(const Point& goal) const {
-    assert(!path.empty() && "error, path is empty!");
+    ASSERT(!path.empty() && "error, path is empty!");
     return std::abs(path.back().x - goal.x) + std::abs(path.back().y - goal.y);
   }
 };

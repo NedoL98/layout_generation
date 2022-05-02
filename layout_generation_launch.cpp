@@ -8,7 +8,6 @@
 
 #include "yaml-cpp/yaml.h"
 
-#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <optional>
@@ -66,13 +65,13 @@ struct TaskAssigners {
 
 void GenerateLayout(int argc, char** argv) {
   if (argc != 7) {
-    std::cerr << "please specify following params: " << std::endl;
-    std::cerr << "    - path to data file" << std::endl;
-    std::cerr << "    - number of assignments" << std::endl;
-    std::cerr << "    - kept eject induct ratio" << std::endl;
-    std::cerr << "    - number of epochs" << std::endl;
-    std::cerr << "    - number of assigners" << std::endl;
-    std::cerr << "    - number of agents" << std::endl;
+    std::cout << "please specify following params: " << std::endl;
+    std::cout << "    - path to data file" << std::endl;
+    std::cout << "    - number of assignments" << std::endl;
+    std::cout << "    - kept eject induct ratio" << std::endl;
+    std::cout << "    - number of epochs" << std::endl;
+    std::cout << "    - number of assigners" << std::endl;
+    std::cout << "    - number of agents" << std::endl;
     exit(0);
   }
   // Mute all cerr

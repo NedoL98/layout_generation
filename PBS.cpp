@@ -54,7 +54,7 @@ bool UpdatePaths(
   for (size_t i = 0; i < topsort_order.size(); ++i) {
     const size_t agent_id = topsort_order[i];
     const Agent& agent = agents.At(agent_id);
-    assert(agent_id == agent.id);
+    ASSERT(agent_id == agent.id);
 
     // todo : update AStar according to paper
 
@@ -71,7 +71,7 @@ bool UpdatePaths(
       path_updated[agent_id] = true;
     } else {
       // Update path only for the chosen agent and for all conflicting agents with lower priority
-      assert(update_path_for.value() < agents.GetSize());
+      ASSERT(update_path_for.value() < agents.GetSize());
       bool update_path = (update_path_for.value() == agent_id);
       if (!update_path) {
         for (size_t j = 0; j < i; ++j) {
@@ -107,7 +107,7 @@ std::vector<std::vector<Point>> MakePBSIteration(
   std::multiset<PBSState, decltype(states_cmp)> states(states_cmp);
 
   PBSState root(agents.GetSize());
-  assert(UpdatePaths(agents, graph, root, std::nullopt));
+  ASSERT(UpdatePaths(agents, graph, root, std::nullopt));
   root.cost = CalculateCost(root.paths);
   states.insert(root);
 
@@ -120,7 +120,7 @@ std::vector<std::vector<Point>> MakePBSIteration(
 
     if (conflict.conflict_type == ConflictType::VertexConflict) {
       const Point position = dynamic_cast<const VertexConflict&>(conflict).conflicting_vertex;
-      assert(position == state.paths[agent_id_low_priority][ts]);
+      ASSERT(position == state.paths[agent_id_low_priority][ts]);
       state.vertex_conflicts[agent_id_low_priority][ts].insert(position);
     } else if (conflict.conflict_type == ConflictType::EdgeConflict) {
       Edge edge = dynamic_cast<const EdgeConflict&>(conflict).conflicting_edge;
@@ -128,8 +128,8 @@ std::vector<std::vector<Point>> MakePBSIteration(
           && state.paths[agent_id_low_priority][ts] != edge.second) {
         std::swap(edge.second, edge.first);
       }
-      assert(edge.first == state.paths[agent_id_low_priority][ts - 1]);
-      assert(edge.second == state.paths[agent_id_low_priority][ts]);
+      ASSERT(edge.first == state.paths[agent_id_low_priority][ts - 1]);
+      ASSERT(edge.second == state.paths[agent_id_low_priority][ts]);
       state.edge_conflicts[agent_id_low_priority][ts].insert(std::move(edge));
     } else {
       std::cerr << "Conflict has no type!" << std::endl;
