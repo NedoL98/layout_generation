@@ -18,4 +18,4 @@
 Different number of agents (50 epoch, generation size 3, 10000 tasks, three assigners).
 |Dataset + Density|3 agents|5 agents|10 agents|15 agents|
 |:-----:|:---------:|:---------:|:---------:|:---------:|
-|Small + `~0.18`|`0.0569155`|`0.0565362`|`0.0545007`|`0.0530162`|
+|Small + `~0.18`|`0.0569223`|`0.0565362`|`0.0545007`|`0.0530162`|
