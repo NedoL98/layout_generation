@@ -98,12 +98,15 @@ Generation::Generation(
       const size_t generation_size,
       const size_t induct_checkpoints,
       const double kept_checkpoint_ratio,
+      const double entropy,
       const size_t seed) {
   srand(seed);
   chromosomes.resize(generation_size);
   for (size_t i = 0; i < generation_size; ++i) {
     chromosomes[i].Init(induct_checkpoints, kept_checkpoint_ratio, i);
   }
+
+  this->entropy = entropy;
 }
 
 void Generation::Evolve() {
@@ -120,16 +123,17 @@ void Generation::Evolve() {
   std::default_random_engine generator;
   std::discrete_distribution<int> distribution(scores.begin(), scores.end());
   Generation new_generation;
+  new_generation.entropy = entropy;
   while (new_generation.chromosomes.size() + 1 < chromosomes.size()) {
     new_generation.chromosomes.push_back(chromosomes[distribution(generator)]);
   }
 
   for (auto& chromosome : new_generation.chromosomes) {
-    chromosome.Mutate();
+    chromosome.Mutate(entropy);
   }
   for (auto& chromosome : new_generation.chromosomes) {
     for (const auto& other_chromosome : new_generation.chromosomes) {
-        chromosome.Crossover(other_chromosome);
+        chromosome.Crossover(other_chromosome, entropy);
     }
   }
 

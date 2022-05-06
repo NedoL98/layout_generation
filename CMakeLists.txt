@@ -41,6 +41,8 @@ set(LAYOUT_GENERATION_SOURCE_LIST
 add_executable(
     layout_generation
     ${LAYOUT_GENERATION_SOURCE_LIST}
+    arguments_parser.cpp
+    cxxopts.hpp
     layout_generation_launch.cpp
 )
 target_link_libraries(

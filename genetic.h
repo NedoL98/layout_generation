@@ -9,8 +9,8 @@ class Chromosome {
  public:
   void Init(const size_t induct_checkpoints_num, const double ratio_to_keep, const size_t idx);
 
-  void Crossover(const Chromosome& other, const double enthropy = 0.3);
-  void Mutate(const double enthropy = 0.3);
+  void Crossover(const Chromosome& other, const double enthropy);
+  void Mutate(const double enthropy);
   void SetScore(const double score) {
     score_opt = score;
   }
@@ -42,6 +42,7 @@ public:
       const size_t generation_size,
       const size_t induct_checkpoints_num,
       const double kept_checkpoint_ratio,
+      const double entropy,
       const size_t seed = 42);
 
   const std::vector<Chromosome>& GetChromosomes() const {
@@ -55,4 +56,5 @@ public:
 
 private:
   std::vector<Chromosome> chromosomes;
+  double entropy;
 };

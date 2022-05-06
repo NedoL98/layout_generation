@@ -13,7 +13,7 @@ Graph::Graph(const YAML::Node& yaml_graph) {
   }
 }
 
-Graph::Graph(const char* filename, const double deleted_eject_checkpoints_ratio) {
+Graph::Graph(const std::string& filename, const double deleted_eject_checkpoints_ratio) {
   std::ifstream graph_file(filename);
   std::string line;
   std::getline(graph_file, line);

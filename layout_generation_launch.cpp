@@ -1,4 +1,5 @@
 #include "agents.h"
+#include "arguments_parser.h"
 // #include "CBS.h"
 #include "PBS.h"
 #include "genetic.h"
@@ -64,30 +65,26 @@ struct TaskAssigners {
 }
 
 void GenerateLayout(int argc, char** argv) {
-  if (argc != 7) {
-    std::cout << "please specify following params: " << std::endl;
-    std::cout << "    - path to data file" << std::endl;
-    std::cout << "    - number of assignments" << std::endl;
-    std::cout << "    - kept eject induct ratio" << std::endl;
-    std::cout << "    - number of epochs" << std::endl;
-    std::cout << "    - number of assigners" << std::endl;
-    std::cout << "    - number of agents" << std::endl;
-    exit(0);
-  }
   // Mute all cerr
   freopen("log.cerr", "w", stderr);
-  Graph graph_full(argv[1], 1.0);
-  const size_t assignments_cnt = std::atoi(argv[2]);
-  const double kept_checkpoint_ratio = std::stod(argv[3]);
+
+  const auto params = ParseArguments(argc, argv);
+
+  Graph graph_full(params["file"].as<std::string>(), 1.0);
+  const size_t assignments_cnt = params["assignments"].as<size_t>();
+  const double kept_checkpoint_ratio = params["checkpoints_ratio"].as<double>();
   TaskAssigners task_assigners_init(
-      std::stoi(argv[5]),
+      params["chains"].as<size_t>(),
       graph_full.GetInductCheckpoints().size() * kept_checkpoint_ratio,
       graph_full.GetEjectCheckpoints().size(),
       assignments_cnt);
-  const Agents agents_init(graph_full, std::stoi(argv[6]));
+  const Agents agents_init(graph_full, params["agents"].as<size_t>());
   const size_t generation_size = 3;
   Generation generation(
-      generation_size, graph_full.GetInductCheckpoints().size(), kept_checkpoint_ratio);
+      generation_size,
+      graph_full.GetInductCheckpoints().size(),
+      kept_checkpoint_ratio,
+      params["entropy"].as<double>());
 
   double total_throughput = 0.0;
   double min_throughput = std::numeric_limits<double>::max();
@@ -137,7 +134,7 @@ void GenerateLayout(int argc, char** argv) {
     }
   };
 
-  const size_t steps = std::atoi(argv[4]);
+  const size_t steps = params["epochs"].as<size_t>();
   for (size_t i = 0; i < steps; ++i) {
     std::cout << "Generation " << i + 1 << std::endl;
     std::cout.flush();
