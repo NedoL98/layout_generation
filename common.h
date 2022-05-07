@@ -36,6 +36,7 @@ std::ostream& operator << (std::ostream& ostream, const Point& point);
 using Edge = std::pair<Point, Point>;
 
 size_t CalculateCost(const std::vector<std::vector<Point>>& paths);
+size_t CalculateMaxLength(const std::vector<std::vector<Point>>& paths);
 double CalculateThroughput(const std::vector<std::vector<Point>>& paths, const size_t assignments);
 
 struct ConflictBase;

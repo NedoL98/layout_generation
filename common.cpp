@@ -39,8 +39,16 @@ size_t CalculateCost(const std::vector<std::vector<Point>>& paths) {
   });
 }
 
+
+size_t CalculateMaxLength(const std::vector<std::vector<Point>>& paths) {
+  return std::max_element(paths.begin(), paths.end(),
+      [](const std::vector<Point>& lhs, const std::vector<Point>& rhs) {
+    return lhs.size() < rhs.size();
+  })->size();
+}
+
 double CalculateThroughput(const std::vector<std::vector<Point>>& paths, const size_t assignments) {
-  return static_cast<double>(assignments) / CalculateCost(paths);
+  return static_cast<double>(assignments) / CalculateMaxLength(paths);
 }
 
 std::shared_ptr<ConflictBase> FindFirstConflict(
