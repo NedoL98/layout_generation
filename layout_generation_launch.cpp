@@ -108,6 +108,7 @@ void GenerateLayout(int argc, char** argv) {
     std::vector<std::vector<Point>> first_assigner_paths;
     for (size_t i = 0; i < task_assigners.assigners.size(); ++i) {
       auto& task_assigner = task_assigners.assigners[i];
+      agents = agents_init;
       auto paths = PriorityBasedSearch(agents, graph, task_assigner, 30);
       if (i == 0) {
         first_assigner_paths = paths;
