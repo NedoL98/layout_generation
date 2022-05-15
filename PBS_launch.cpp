@@ -26,6 +26,7 @@ int main(int argc, char** argv) {
   ASSERT(yaml_config["agents"] && "No agents found in config file");
   Agents agents(yaml_config["agents"]);
   */
+  /*
   Graph graph(argv[1], std::stod(argv[3]));
   const size_t assignments_cnt = std::atoi(argv[2]);
   TaskAssigner task_assigner(graph, assignments_cnt);
@@ -44,4 +45,5 @@ int main(int argc, char** argv) {
   }
   const double throughput = CalculateThroughput(paths, assignments_cnt);
   std::cerr << "Throughtput: " << throughput << std::endl;
+  */
 }

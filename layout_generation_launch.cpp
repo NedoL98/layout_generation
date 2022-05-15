@@ -10,6 +10,7 @@
 #include "yaml-cpp/yaml.h"
 
 #include <fstream>
+#include <future>
 #include <iostream>
 #include <optional>
 #include <mutex>
@@ -90,63 +91,90 @@ void GenerateLayout(int argc, char** argv) {
   double min_throughput = std::numeric_limits<double>::max();
   std::optional<BestAssignment> best_assignment;
 
-  std::mutex mtx;
-  const auto& run_pbs = [&](Chromosome& chromosome) {
-    Graph graph = graph_full;
-    graph.KeepOnlySelectedCheckpoints(chromosome.GetCheckpointsPermutation());
-    TaskAssigners task_assigners = task_assigners_init;
-    Agents agents = agents_init;
-    // Explicitly check that
-    // - graph is connected
-    // - it's possible to reach all the eject checkpoints
-    if (!graph.IsConnected() || !graph.AllInductCheckpointsAreReachable()) {
-      chromosome.Invalidate();
-      return;
-    }
-    double throughput_avg = 0;
+  const size_t steps = params["epochs"].as<size_t>();
+  for (size_t i = 0; i < steps; ++i) {
+    std::cout << "Generation " << i + 1 << std::endl;
+    std::cout.flush();
+    auto& chromosomes = generation.GetChromosomesMutable();
+    std::vector<std::vector<std::thread>> threads;
+    std::vector<std::vector<std::future<std::pair<Paths, Agents>>>> futures;
+    threads.reserve(chromosomes.size());
+    futures.reserve(chromosomes.size());
 
-    std::vector<std::vector<Point>> first_assigner_paths;
-    for (size_t i = 0; i < task_assigners.assigners.size(); ++i) {
-      auto& task_assigner = task_assigners.assigners[i];
-      agents = agents_init;
-      auto paths = PriorityBasedSearch(agents, graph, task_assigner, 30);
-      if (i == 0) {
-        first_assigner_paths = paths;
+    for (auto& chromosome : chromosomes) {
+      if (threads.size() < chromosomes.size()) {
+        threads.emplace_back(std::vector<std::thread>(task_assigners_init.assigners.size()));
+        futures.emplace_back(std::vector<std::future<std::pair<Paths, Agents>>>(task_assigners_init.assigners.size()));
       }
-      const double throughput = CalculateThroughput(paths, assignments_cnt);
-      throughput_avg += throughput;
+
+      Graph graph = graph_full;
+      graph.KeepOnlySelectedCheckpoints(chromosome.GetCheckpointsPermutation());
+      // Explicitly check that
+      // - graph is connected
+      // - it's possible to reach all the eject checkpoints
+      if (!graph.IsConnected() || !graph.AllInductCheckpointsAreReachable()) {
+        chromosome.Invalidate();
+        continue;
+      }
+
+      TaskAssigners task_assigners = task_assigners_init;
+      for (size_t i = 0; i < task_assigners.assigners.size(); ++i) {
+        std::promise<std::pair<Paths, Agents>> promise;
+        futures.back()[i] = promise.get_future();
+        threads.back()[i] = std::thread(
+            PriorityBasedSearch,
+            agents_init,
+            graph,
+            task_assigners.assigners[i],
+            30,
+            std::move(promise));
+      }
     }
-    throughput_avg /= task_assigners.assigners.size();
-    chromosome.SetScore(throughput_avg);
-    {
-      std::lock_guard<std::mutex> lock(mtx);
+
+    for (size_t i = 0; i < chromosomes.size(); ++i) {
+      if (!threads[i].front().joinable()) {
+        // Chromosome is invalid
+        continue;
+      }
+
+      double throughput_avg = 0;
+      Paths first_assigner_paths;
+      Agents first_assigner_agents;
+
+      for (size_t j = 0; j < task_assigners_init.assigners.size(); ++j) {
+        auto [paths, agents] = futures[i][j].get();
+        const double throughput = CalculateThroughput(paths, assignments_cnt);
+        throughput_avg += throughput;
+        if (j == 0) {
+          first_assigner_paths = std::move(paths);
+          first_assigner_agents = std::move(agents);
+        }
+      }
+      throughput_avg /= task_assigners_init.assigners.size();
+      chromosomes[i].SetScore(throughput_avg);
+
       if (!best_assignment || best_assignment->throughput < throughput_avg) {
         if (!best_assignment) {
           best_assignment = BestAssignment();
         }
         best_assignment->paths = std::move(first_assigner_paths);
         best_assignment->throughput = throughput_avg;
-        best_assignment->induct_checkpoints_indices = chromosome.GetCheckpointsPermutation();
-        best_assignment->graph = graph;
-        best_assignment->agents = agents;
+        best_assignment->induct_checkpoints_indices = chromosomes[i].GetCheckpointsPermutation();
+        Graph graph = graph_full;
+        graph.KeepOnlySelectedCheckpoints(chromosomes[i].GetCheckpointsPermutation());
+        best_assignment->graph = std::move(graph);
+        best_assignment->agents = std::move(first_assigner_agents);
       }
       min_throughput = std::min(min_throughput, throughput_avg);
       total_throughput += throughput_avg;
     }
-  };
 
-  const size_t steps = params["epochs"].as<size_t>();
-  for (size_t i = 0; i < steps; ++i) {
-    std::cout << "Generation " << i + 1 << std::endl;
-    std::cout.flush();
-    auto chromosomes = generation.GetChromosomesMutable();
-    std::vector<std::thread> threads;
-    threads.reserve(generation.GetChromosomesMutable().size());
-    for (auto& chromosome : generation.GetChromosomesMutable()) {
-      threads.push_back(std::thread(run_pbs, std::ref(chromosome)));
-    }
-    for (auto& thread : threads) {
-      thread.join();
+    for (auto& assigner_threads : threads) {
+      for (auto& thread : assigner_threads) {
+        if (thread.joinable()) {
+          thread.join();
+        }
+      }
     }
     std::cout << "Done " << i + 1 << std::endl;
     std::cout.flush();

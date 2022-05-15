@@ -164,8 +164,12 @@ std::vector<std::vector<Point>> MakePBSIteration(
 }
 
 // todo : this is the same as CBS, merge them
-std::vector<std::vector<Point>> PriorityBasedSearch(
-    Agents& agents, const Graph& graph, TaskAssigner& task_assigner, const size_t window_size) {
+void PriorityBasedSearch(
+    Agents agents,
+    Graph graph,
+    TaskAssigner task_assigner,
+    const size_t window_size,
+    std::promise<std::pair<Paths, Agents>>&& promise) {
   std::vector<std::vector<Point>> result(agents.GetSize());
   bool has_tasks = false;
   do {
@@ -183,5 +187,5 @@ std::vector<std::vector<Point>> PriorityBasedSearch(
       }
     }
   } while (task_assigner.HasAssignments() || has_tasks);
-  return result;
+  promise.set_value({result, agents});
 }
