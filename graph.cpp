@@ -182,7 +182,7 @@ bool Graph::IsConnected() const {
 bool Graph::AllInductCheckpointsAreReachable() const {
   for (const auto& induct_checkpoint : induct_checkpoints) {
     bool checkpoint_is_reachable = false;
-    for (const auto& neighbour : GetNeighbours(induct_checkpoint)) {
+    for (const auto& neighbour : GetNeighbours(induct_checkpoint, false)) {
       if (!obstacles.count(neighbour)) {
         checkpoint_is_reachable = true;
         break;
