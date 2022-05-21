@@ -80,7 +80,7 @@ void GenerateLayout(int argc, char** argv) {
       graph_full.GetEjectCheckpoints().size(),
       assignments_cnt);
   const Agents agents_init(graph_full, params["agents"].as<size_t>());
-  const size_t generation_size = 3;
+  const size_t generation_size = params["chromosomes"].as<size_t>();
   Generation generation(
       generation_size,
       graph_full.GetInductCheckpoints().size(),

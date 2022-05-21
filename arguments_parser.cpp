@@ -12,7 +12,8 @@ cxxopts::ParseResult ParseArguments(int argc, char* argv[]) {
       ("c, chains", "Number of assignment chains", cxxopts::value<size_t>()->default_value("3"))
       ("r, checkpoints_ratio", "Eject checkpoints ratio", cxxopts::value<double>()->default_value("0.2"))
       ("e, epochs", "Number of epochs", cxxopts::value<size_t>()->default_value("50"))
-      ("p, entropy", "Entropy of the genetic algorithm", cxxopts::value<double>()->default_value("0.3"));
+      ("p, entropy", "Entropy of the genetic algorithm", cxxopts::value<double>()->default_value("0.3"))
+      ("h, chromosomes", "Number of chromosomes", cxxopts::value<size_t>()->default_value("3"));
 
   std::vector<std::string> positional_args = {"file"};
   options.parse_positional(positional_args.begin(), positional_args.end());
