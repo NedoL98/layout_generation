@@ -6,3 +6,5 @@ Makefile
 cmake_install.cmake
 log.cerr
 best_assignment_epoch*
+.ipynb_checkpoints/
+*.ipynb
